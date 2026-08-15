@@ -3,8 +3,14 @@
 Repositório referente ao **1º Semestre 2026** da disciplina **Prompt Engineering and Artificial Intelligence**
 do curso de **Ciência da Computação** da **FIAP**.
 
-Contém notebooks das aulas, projetos de alunos e referência, infraestrutura Docker para laboratório local
-e ebooks/referências acadêmicas.
+O repositório possui a seguinte estrutura organizada sob a pasta `aulas/`, contendo:
+- Notebooks das 14 aulas (Demo e Aluno)
+- Projetos de referência do professor (com código completo)
+- Esqueletos para alunos (com `# TODO`)
+- Checkpoints de avaliação
+- Infraestrutura Docker para laboratório local
+- Fichas de exercícios para o professor
+- Modelos proibidos e stack tecnológica aprovada
 
 ---
 
@@ -14,12 +20,12 @@ e ebooks/referências acadêmicas.
 2. [Estrutura de pastas](#2-estrutura-de-pastas)
 3. [Plano do semestre](#3-plano-do-semestre)
 4. [Notebooks das aulas](#4-notebooks-das-aulas)
-5. [Projetos — Aluno vs Referência](#5-projetos--aluno-vs-referência)
+5. [Projetos — Referência vs Aluno](#5-projetos--referência-vs-aluno)
 6. [Infraestrutura Docker](#6-infraestrutura-docker)
-7. [Arquivos ignorados](#7-arquivos-ignorados-mantidos-apenas-localmente)
-8. [Ebooks e Referências Acadêmicas](#8-ebooks-e-referências-acadêmicas)
-9. [Como usar — rápido](#9-como-usar--rápido)
-10. [Stack tecnológico aprovado](#10-stack-tecnológico-aprovado)
+7. [Fichas de exercícios — Professor](#7-fichas-de-exercícios--professor)
+8. [Arquivos ignorados](#8-arquivos-ignorados-mantidos-apenas-localmente)
+9. [Ebooks e Referências Acadêmicas](#9-ebooks-e-referências-acadêmicas)
+10. [Stack tecnológica aprovada](#10-stack-tecnológico-aprovado)
 11. [Modelos proibidos](#11-modelos-proibidos)
 12. [Referências acadêmicas](#12-referências-acadêmicas)
 13. [Troubleshooting](#13-troubleshooting)
@@ -30,12 +36,17 @@ e ebooks/referências acadêmicas.
 
 | Componente | Descrição | Público |
 |---|---|---|
-| `1SEM_notebooks_aulas/` | 27 notebooks Jupyter (14 aulas + material complementar) | Professor e aluno |
-| `projetos_langchain_local/` | Projetos Python completos de referência | Professor |
-| `projetos_langchain_local_aluno/` | Projetos com `# TODO` para alunos completarem | Alunos |
-| `Ebooks/` | Livros em PDF de referência | Professor e aluno |
-| `fiap-ai-lab-complete/` | Stack Docker completa (12+ containers) | Professor e aluno |
-| `fiap-openwebui-ollama-setup/` | Setup Docker leve (Ollama + Open WebUI) | Aluno |
+| `aulas/Checkpoints/` | 3 arquivos HTML de checkpoint (CKP01, CKP02, CKP03) | Professor e aluno |
+| `aulas/fiap-ai-lab-complete/` | Stack Docker completa (12+ containers) | Professor e aluno |
+| `aulas/fiap-openwebui-ollama-setup/` | Setup Docker leve (Ollama + Open WebUI) | Aluno |
+| `aulas/fichas_professor_1SEM/` | 14 fichas de exercícios em HTML | Professor |
+| `aulas/projetos/` | 12 pastas de referência do professor (Aula_01 a Aula_12) | Professor |
+| `aulas/projetos_aluno/` | 12 pastas de esqueletos para alunos (com `# TODO`) | Alunos |
+| `aulas/Modulo_1_Fundamentos_de_IA/` | Conteúdo do Módulo 1 (Aulas 01–04) | Professor e aluno |
+| `aulas/Modulo_2_Tecnicas_de_Prompt/` | Conteúdo do Módulo 2 (Aulas 05–08) | Professor e aluno |
+| `aulas/Modulo_3_Python_para_IA/` | Conteúdo do Módulo 3 (Aulas 09–11) | Professor e aluno |
+| `aulas/Modulo_4_Seguranca_Carreiras_Encerramento/` | Conteúdo do Módulo 4 (Aulas 12–14) | Professor e aluno |
+| `Plano_Aulas_1Sem_2026.pdf` | Plano detalhado do 1º semestre 2026 | Professor e aluno |
 
 ---
 
@@ -43,107 +54,187 @@ e ebooks/referências acadêmicas.
 
 ```
 1SEM_Prompt_Engineering_2026/
-├── 1SEM_notebooks_aulas/                    # Notebooks Jupyter das aulas
-│   ├── 1Sem_Aula_01_O_que_e_IA_Da_ficcao_a_realidade.ipynb
-│   ├── 1Sem_Aula_01_O_que_e_IA_Da_ficcao_a_realidade_Demo.ipynb
-│   ├── 1Sem_Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura.ipynb
-│   ├── 1Sem_Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura_Demo.ipynb
-│   ├── 1Sem_Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura_Local.ipynb
-│   ├── 1Sem_Aula_03_Etica_Vies_LGPD_antes_de_construir.ipynb
-│   ├── 1Sem_Aula_03_Etica_Vies_LGPD_antes_de_construir_Demo.ipynb
-│   ├── 1Sem_Aula_04_Anatomia_do_prompt_primeiro_codigo_Python.ipynb
-│   ├── 1Sem_Aula_04_Anatomia_do_prompt_primeiro_codigo_Python_Demo.ipynb
-│   ├── 1Sem_Aula_05_Zero_shot_One_shot_Few_shot.ipynb
-│   ├── 1Sem_Aula_05_Zero_shot_One_shot_Few_shot_Demo.ipynb
-│   ├── 1Sem_Aula_06_Chain_of_Thought_pense_passo_a_passo.ipynb
-│   ├── 1Sem_Aula_06_Chain_of_Thought_pense_passo_a_passo_Demo.ipynb
-│   ├── 1Sem_Aula_07_Role_prompting_parametros_do_modelo.ipynb
-│   ├── 1Sem_Aula_07_Role_prompting_parametros_do_modelo_Demo.ipynb
-│   ├── 1Sem_Aula_08_Funcoes_loops_estrutura_chamada_API.ipynb
-│   ├── 1Sem_Aula_08_Funcoes_loops_estrutura_chamada_API_Demo.ipynb
-│   ├── 1Sem_Aula_09_Historico_de_conversa_como_chatbot_lembra.ipynb
-│   ├── 1Sem_Aula_09_Historico_de_conversa_como_chatbot_lembra_Demo.ipynb
-│   ├── 1Sem_Aula_10_Prompts_templates_variaveis.ipynb
-│   ├── 1Sem_Aula_10_Prompts_templates_variaveis_Demo.ipynb
-│   ├── 1Sem_Aula_11_Mini_chatbot_integrador.ipynb
-│   ├── 1Sem_Aula_11_Mini_chatbot_integrador_Demo.ipynb
-│   ├── 1Sem_Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails.ipynb
-│   ├── 1Sem_Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails_Demo.ipynb
-│   ├── 1Sem_Aula_13_IA_mercado_trabalho_carreiras_portfolio.ipynb
-│   ├── 1Sem_Aula_13_IA_mercado_trabalho_carreiras_portfolio_Demo.ipynb
-│   └── 1Sem_Aula_14_O_que_vem_a_seguir.ipynb
-│   └── 1Sem_Aula_14_O_que_vem_a_seguir_Demo.ipynb
-│
-├── projetos_langchain_local/                # Projetos completos (referência do professor)
-│   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade/
-│   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura/
-│   ├── Aula_03_Etica_Vies_LGPD_antes_de_construir/
-│   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python/
-│   ├── Aula_05_Zero_shot_One_shot_Few_shot/
-│   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo/
-│   ├── Aula_07_Role_prompting_parametros_do_modelo/
-│   ├── Aula_08_Funcoes_loops_estrutura_chamada_API/
-│   ├── Aula_09_Historico_de_conversa_como_chatbot_lembra/
-│   ├── Aula_10_Prompts_templates_variaveis/
-│   ├── Aula_11_Mini_chatbot_integrador/
-│   ├── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails/
-│   └── Bonus_MultiChains_MultiModelos/
-│
-├── projetos_langchain_local_aluno/          # Esqueletos com TODO para os alunos
-│   ├── (mesmas 13 pastas, cada main.py com # TODO)
-│   ├── setup.sh                            # Setup automático macOS/Linux
-│   └── setup.ps1                           # Setup automático Windows
-│
-├── fiap-ai-lab-complete/                   # Laboratório Docker completo
-│   ├── docker-compose.yml
-│   ├── Makefile
-│   ├── .env / .env.example
-│   ├── ollama/
-│   ├── postgres/
-│   ├── chromadb/
-│   ├── pipelines/
-│   ├── searxng/
-│   └── mem0/
-│
-├── fiap-openwebui-ollama-setup/            # Setup Docker leve
-│   ├── docker-compose.yml
-│   ├── Dockerfile
-│   ├── entrypoint.sh
-│   └── .env.example
-│
-├── Ebooks/                                 # Livros de referência (PDF)
-│   ├── AI Agents in Action.pdf
-│   ├── Agentic Coding with Claude Code.pdf
-│   ├── Learning LangChain.pdf
-│   ├── Prompt Engineering.pdf
-│   ├── RAG with Python Cookbook.pdf
-│   └── ... (mais ebooks)
-│
-├── fichas_professor_1SEM/                  # Fichas de exercícios para o professor
-│   ├── 1Sem_Aula_01_Ficha_Professor_Exercicios.html
-│   ├── 1Sem_Aula_02_Ficha_Professor_Exercicios.html
-│   ├── ...
-│   └── 1Sem_Aula_14_Ficha_Professor_Exercicios.html
-│
-├── Checkpoints/                            # Checkpoints de avaliação
-│   ├── CKP01_1Semestre_Mapa_IA.html
-│   ├── CKP02_1Semestre_Biblioteca_Prompts.html
-│   └── CKP03_1Semestre_Chatbot_Especializado.html
-│
-├── Plano_Aulas_1Sem_2026.pdf               # Plano detalhado do 1º semestre 2026
-│
 ├── .gitignore
-├── .omc/
-└── .DS_Store
+├── Plano_Aulas_1Sem_2026.pdf
+├── README.md
+└── aulas/
+    ├── .DS_Store
+    ├── Checkpoints/
+    │   ├── CKP01_1Semestre_Mapa_IA.html
+    │   ├── CKP02_1Semestre_Biblioteca_Prompts.html
+    │   └── CKP03_1Semestre_Chatbot_Especializado.html
+    ├── fiap-ai-lab-complete/
+    │   ├── docker-compose.yml
+    │   ├── Makefile
+    │   ├── .env / .env.example
+    │   ├── ollama/
+    │   ├── postgres/
+    │   ├── chromadb/
+    │   ├── pipelines/
+    │   ├── searxng/
+    │   └── mem0/
+    ├── fiap-openwebui-ollama-setup/
+    │   ├── docker-compose.yml
+    │   ├── Dockerfile
+    │   ├── entrypoint.sh
+    │   └── .env.example
+    ├── fichas_professor_1SEM/
+    │   ├── 1Sem_Aula_01_Ficha_Professor_Exercicios.html
+    │   ├── 1Sem_Aula_02_Ficha_Professor_Exercicios.html
+    │   ├── ... (14 fichas no total)
+    │   └── 1Sem_Aula_14_Ficha_Professor_Exercicios.html
+    ├── projetos/
+    │   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade/
+    │   │   ├── main.py              # Código completo e funcional
+    │   │   ├── requirements.txt     # Dependências Python
+    │   │   ├── .env                 # Variáveis de ambiente (chave já preenchida)
+    │   │   ├── .env.example         # Template das variáveis
+    │   │   ├── .gitignore
+    │   │   └── README.md            # Instruções específicas da aula
+    │   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_03_Etica_Vies_LGPD_antes_de_construir/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_05_Zero_shot_One_shot_Few_shot/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_07_Role_prompting_parametros_do_modelo/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_08_Funcoes_loops_estrutura_chamada_API/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_09_Historico_de_conversa_como_chatbot_lembra/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_10_Prompts_templates_variaveis/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   ├── Aula_11_Mini_chatbot_integrador/
+    │   │   ├── main.py
+    │   │   ├── requirements.txt
+    │   │   ├── .env
+    │   │   ├── .env.example
+    │   │   ├── .gitignore
+    │   │   └── README.md
+    │   └── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails/
+    │       ├── main.py
+    │       ├── requirements.txt
+    │       ├── .env
+    │       ├── .env.example
+    │       ├── .gitignore
+    │       └── README.md
+    ├── projetos_aluno/
+    │   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade/       # Pasta vazia (setup.sh/.gitignore pendentes)
+    │   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura/
+    │   ├── Aula_03_Etica_Vies_LGPD_antes_de_construir/
+    │   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python/
+    │   ├── Aula_05_Zero_shot_One_shot_Few_shot/
+    │   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo/
+    │   ├── Aula_07_Role_prompting_parametros_do_modelo/
+    │   ├── Aula_08_Funcoes_loops_estrutura_chamada_API/
+    │   ├── Aula_09_Historico_de_conversa_como_chatbot_lembra/
+    │   ├── Aula_10_Prompts_templates_variaveis/
+    │   ├── Aula_11_Mini_chatbot_integrador/
+    │   └── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails/
+    ├── Modulo_1_Fundamentos_de_IA/
+    │   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade_aluno.ipynb
+    │   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade_demo.ipynb
+    │   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade.html
+│   │   ├── Aula_01_O_que_e_IA_Da_ficcao_a_realidade.pdf
+│   │   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura_aluno.ipynb
+│   │   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura_demo.ipynb
+│   │   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura.html
+│   │   ├── Aula_02_Como_um_LLM_pensa_tokens_contexto_temperatura.pdf
+│   │   ├── Aula_03_Etica_Vies_LGPD_antes_de_construir_aluno.ipynb
+│   │   ├── Aula_03_Etica_Vies_LGPD_antes_de_construir_demo.ipynb
+│   │   ├── Aula_03_Etica_Vies_LGPD_antes_de_construir.html
+│   │   └── Aula_03_Etica_Vies_LGPD_antes_de_construir.pdf
+│   ├── Modulo_2_Tecnicas_de_Prompt/
+    │   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python_aluno.ipynb
+    │   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python_demo.ipynb
+    │   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python.html
+    │   ├── Aula_04_Anatomia_do_prompt_primeiro_codigo_Python.pdf
+    │   ├── Aula_05_Zero_shot_One_shot_Few_shot_aluno.ipynb
+    │   ├── Aula_05_Zero_shot_One_shot_Few_shot_demo.ipynb
+    │   ├── Aula_05_Zero_shot_One_shot_Few_shot.html
+    │   ├── Aula_05_Zero_shot_One_shot_Few_shot.pdf
+    │   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo_aluno.ipynb
+    │   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo_demo.ipynb
+    │   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo.html
+    │   ├── Aula_06_Chain_of_Thought_pense_passo_a_passo.pdf
+│   │   ├── Aula_07_Role_prompting_parametros_do_modelo_aluno.ipynb
+│   │   ├── Aula_07_Role_prompting_parametros_do_modelo_demo.ipynb
+│   │   ├── Aula_07_Role_prompting_parametros_do_modelo.html
+│   │   └── Aula_07_Role_prompting_parametros_do_modelo.pdf
+│   ├── Modulo_3_Python_para_IA/
+│   │   ├── Aula_08_Funcoes_loops_estrutura_chamada_API_aluno.ipynb
+│   │   ├── Aula_08_Funcoes_loops_estrutura_chamada_API_demo.ipynb
+│   │   ├── Aula_08_Funcoes_loops_estrutura_chamada_API.html
+│   │   ├── Aula_08_Funcoes_loops_estrutura_chamada_API.pdf
+│   │   ├── Aula_09_Historico_de_conversa_como_chatbot_lembra_aluno.ipynb
+│   │   ├── Aula_09_Historico_de_conversa_como_chatbot_lembra_demo.ipynb
+│   │   ├── Aula_09_Historico_de_conversa_como_chatbot_lembra.html
+│   │   └── Aula_09_Historico_de_conversa_como_chatbot_lembra.pdf
+│   ├── Modulo_4_Seguranca_Carreiras_Encerramento/
+│   │   ├── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails_aluno.ipynb
+│   │   ├── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails_demo.ipynb
+│   │   ├── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails.html
+│   │   ├── Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails.pdf
+│   │   ├── Aula_13_IA_mercado_trabalho_carreiras_portfolio_aluno.ipynb
+│   │   ├── Aula_13_IA_mercado_trabalho_carreiras_portfolio_demo.ipynb
+│   │   ├── Aula_13_IA_mercado_trabalho_carreiras_portfolio.html
+│   │   └── Aula_13_IA_mercado_trabalho_carreiras_portfolio.pdf
+│   └── Aula_14_O_que_vem_a_seguir_aluno.ipynb
+│   └── Aula_14_O_que_vem_a_seguir_demo.ipynb
+│
 ```
 
-Cada pasta de projeto (`Aula_XX_Nome/`) contém:
-- `main.py` — Código completo e funcional (professor) ou com `# TODO` (aluno)
-- `requirements.txt` — Dependências Python
-- `.env` — Variáveis de ambiente (chave já preenchida para professor)
-- `.env.example` — Template das variáveis
-- `.gitignore`
-- `README.md` — Instruções específicas da aula
+**Observação:** Cada pasta `aulas/projetos/Aula_XX/` contém `main.py` completo (professor) ou com `# TODO` (aluno), mais `requirements.txt`, `.env`, `.env.example`, `.gitignore` e `README.md` específicos.
 
 ---
 
@@ -181,7 +272,7 @@ Cada pasta de projeto (`Aula_XX_Nome/`) contém:
 
 ## 4. Notebooks das aulas
 
-A pasta `1SEM_notebooks_aulas/` contém **27 notebooks** no formato:
+A pasta `aulas/Modulo_1_Fundamentos_de_IA/` through `aulas/Modulo_4_Seguranca_Carreiras_Encerramento/` contém **27 notebooks** Jupyter no formato:
 
 | Tipo | Sufixo | Descrição |
 |---|---|---|
@@ -191,6 +282,12 @@ A pasta `1SEM_notebooks_aulas/` contém **27 notebooks** no formato:
 > Aula 02 possui versões adicionais `_Demo_Local.ipynb` e `_Aluno_Local.ipynb`
 > para uso com Ollama local ao invés de API cloud.
 
+Os notebooks estão organizados por módulo:
+- **Módulo 1** (Aulas 01–04): Fundamentos de IA, tokens, contexto, temperatura, ética, vieses e LGPD
+- **Módulo 2** (Aulas 05–08): Zero-shot/One-shot/Few-shot, Chain-of-Thought, Role prompting, funções/loops/API, templates e variáveis
+- **Módulo 3** (Aulas 09–11): Histórico de conversa, chatbot integrador, prompts templates
+- **Módulo 4** (Aulas 12–14): Segurança LLMs, mercado de trabalho e IA, o que vem a seguir
+
 ### Como usar no Google Colab
 
 1. Acesse [colab.research.google.com](https://colab.research.google.com)
@@ -199,11 +296,11 @@ A pasta `1SEM_notebooks_aulas/` contém **27 notebooks** no formato:
 
 ---
 
-## 5. Projetos LangChain — Professor vs Aluno
+## 5. Projetos — Referência vs Aluno
 
-### `projetos_langchain_local/` (Professor)
+### `aulas/projetos/` (Professor)
 
-Contém os **projetos completos** como referência. Cada pasta tem:
+Contém **12 pastas de referência completas**, una por aula. Cada pasta tem:
 
 ```
 Aula_XX_Nome/
@@ -214,21 +311,6 @@ Aula_XX_Nome/
 ├── .gitignore
 └── README.md            # Instruções específicas da aula
 ```
-
-### `projetos_langchain_local_aluno/` (Aluno)
-
-Contém **esqueletos** com `# TODO` para os alunos completarem:
-
-```python
-# TODO: Crie a chain LCEL usando o pipe | combine_prompt
-# TODO: Adicione streaming com .stream()
-# TODO: Implemente a função para enviar mensagem ao chat
-```
-
-Cada arquivo `main.py` mantém toda a infraestrutura (imports, config, LLM setup)
-e pede ao aluno para implementar apenas a lógica principal.
-
-### Lista de projetos
 
 | # | Pasta | Tema |
 |---|---|---|
@@ -244,13 +326,27 @@ e pede ao aluno para implementar apenas a lógica principal.
 | 10 | `Aula_10_Prompts_templates_variaveis` | Prompts templates e variáveis |
 | 11 | `Aula_11_Mini_chatbot_integrador` | Mini chatbot integrador |
 | 12 | `Aula_12_Seguranca_LLMs_injection_alucinacao_guardrails` | Segurança LLMs: injection, alucinação, guardrails |
-| B | `Bonus_MultiChains_MultiModelos` | RunnableParallel + multi-modelos |
+
+### `aulas/projetos_aluno/` (Aluno)
+
+Contém **12 pastas de esqueletos** com `# TODO` para os alunos completarem:
+
+```python
+# TODO: Implemente a lógica principal da chain
+# TODO: Adicione streaming com .stream()
+# TODO: Configure o modelo Ollama
+```
+
+Cada arquivo `main.py` mantém toda a infraestrutura (imports, config, LLM setup)
+e pede ao aluno para implementar apenas a lógica principal.
+
+> As pastas `projetos_aluno/Aula_XX/` têm estrutura básica porém alguns têm arquivos pendentes de setup (`.env.example`, `.gitignore`, `setup.sh`).
 
 ---
 
 ## 6. Infraestrutura Docker
 
-### 6.1 Setup leve — `fiap-openwebui-ollama-setup/`
+### 6.1 Setup leve — `aulas/fiap-openwebui-ollama-setup/`
 
 Recomendado para máquinas com pouca memória ou para uso rápido.
 
@@ -262,13 +358,13 @@ Recomendado para máquinas com pouca memória ou para uso rápido.
 **Modelos padrão:** `qwen3.5:0.8b` (chat) + `qwen3-embedding:0.6b` (embeddings)
 
 ```bash
-cd fiap-openwebui-ollama-setup
+cd aulas/fiap-openwebui-ollama-setup
 cp .env.example .env
 docker compose up -d --build
 # Acesse http://localhost:3000
 ```
 
-### 6.2 Stack completa — `fiap-ai-lab-complete/`
+### 6.2 Stack completa — `aulas/fiap-ai-lab-complete/`
 
 Laboratório completo com 12+ containers para todas as aulas.
 
@@ -294,7 +390,7 @@ Laboratório completo com 12+ containers para todas as aulas.
 | `memory` | base + mem0 | Aula de memória (11) |
 
 ```bash
-cd fiap-ai-lab-complete
+cd aulas/fiap-ai-lab-complete
 cp .env.example .env
 # Para uso completo:
 make up-profile-complete
@@ -304,7 +400,22 @@ make up-profile-minimum
 
 ---
 
-## 7. Arquivos ignorados (mantidos apenas localmente)
+## 7. Fichas de exercícios — Professor
+
+A pasta `aulas/fichas_professor_1SEM/` contém **14 fichas** de exercícios em HTML, uma para cada aula:
+
+```
+1Sem_Aula_01_Ficha_Professor_Exercicios.html
+1Sem_Aula_02_Ficha_Professor_Exercicios.html
+...
+1Sem_Aula_14_Ficha_Professor_Exercicios.html
+```
+
+Estas fichas contêm exercícios teóricos e práticos alinhados ao conteúdo de cada aula, destinados ao uso pelo professor durante as sessões.
+
+---
+
+## 8. Arquivos ignorados (mantidos apenas localmente)
 
 Alguns arquivos grandes ou específicos do professor são mantidos apenas localmente
 e **não são commitados** no repositório:
@@ -312,33 +423,31 @@ e **não são commitados** no repositório:
 | Arquivo | Descrição |
 |---|---|
 | `Plano_Aulas_1Sem_2026.pdf` | Plano detalhado do 1º semestre 2026 |
-| `Apostila_LangChain_Basico_Intermediario_LangGraph.html` | Apostila completa de LangChain |
 
-> Esses arquivos estão listados no `.gitignore`. Para acessá-los, peça ao professor.
+> Este arquivo está listado no `.gitignore`. Para acessá-lo, peça ao professor.
 
 ---
 
-## 8. Ebooks e Referências Acadêmicas
+## 9. Ebooks e Referências Acadêmicas
 
-A pasta `Ebooks/` contém livros para consulta:
+### Livros (na pasta `Ebooks/`)
 
-| Título | Autor |
-|---|---|
-| AI Agents in Action | Micheal Lanham |
-| Agentic Artificial Intelligence | Pascal Bornet et al. |
-| Agentic Coding with Claude Code | Eden Marco |
-| Agentic Design Patterns | Antonio Gullí |
-| Architecting AI Software Systems | Richard D. Avila |
-| Domain-Specific Small Language Models | Guglielmo Iozzia |
-| Effective Conversational AI | Andrew Freed et al. |
-| Essential GraphRAG | Tomaž Bratanic, Oskar Hane |
-| Learning LangChain | Mayo Oshin, Nuno |
-| Prompt Engineering | (hands-on guide) |
-| Python Illustrated | Maaike van Putten |
-| RAG with Python Cookbook | Dominik Polzer |
-| AI-Native LLM Security | Vaibhav Malik et al. |
-| A Practical Guide to RLHF | Sandip Kulkarni |
-| ChatGPT Business Goldmines | Dr. Ope Banwo |
+A pasta `Ebooks/` (não mostrada no tree por ser grande) contém livros para consulta:
+- AI Agents in Action | Micheal Lanham
+- Agentic Artificial Intelligence | Pascal Bornet et al.
+- Agentic Coding with Claude Code | Eden Marco
+- Agentic Design Patterns | Antonio Gullí
+- Architecting AI Software Systems | Richard D. Avila
+- Domain-Specific Small Language Models | Guglielmo Iozzia
+- Effective Conversational AI | Andrew Freed et al.
+- Essential GraphRAG | Tomaž Bratanic, Oskar Hane
+- Learning LangChain | Mayo Oshin, Nuno
+- Prompt Engineering | (hands-on guide)
+- Python Illustrated | Maaike van Putten
+- RAG with Python Cookbook | Dominik Polzer
+- AI-Native LLM Security | Vaibhav Malik et al.
+- A Practical Guide to RLHF | Sandip Kulkarni
+- ChatGPT Business Goldmines | Dr. Ope Banwo
 
 ### Referências acadêmicas
 
@@ -367,66 +476,6 @@ A pasta `Ebooks/` contém livros para consulta:
 - Lei 13.709/2018 (LGPD) — planalto.gov.br
 - PL 2338/2023 (Marco Legal da IA) — senado.leg.br
 - EU AI Act — Regulation 2024/1689
-
----
-
-## 9. Como usar — rápido
-
-### Opção 1: Notebooks (Google Colab)
-
-1. Abra o notebook `_Demo.ipynb` da aula desejada no Colab
-2. Execute as células para acompanhar a demonstração
-3. Abra o notebook `_Aluno.ipynb` para a atividade prática
-
-### Opção 2: Projeto local (com Docker)
-
-1. Suba o Ollama local:
-   ```bash
-   cd fiap-openwebui-ollama-setup
-   cp .env.example .env
-   docker compose up -d --build
-   ```
-
-2. Acesse o projeto da aula (aluno):
-   ```bash
-   cd projetos_langchain_local_aluno/Aula_01_O_que_e_IA_Da_ficcao_a_realidade
-   python3 -m venv .venv && source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
-
-3. Configure o `.env` para apontar ao Ollama local:
-   ```
-   OLLAMA_HOST=http://localhost:11434
-   OLLAMA_MODEL=qwen3.5:0.8b
-   ```
-
-4. Implemente os `# TODO` no `main.py` e execute:
-   ```bash
-   python main.py
-   ```
-
-### Opção 3: Projeto local (com Ollama Cloud)
-
-1. Acesse o projeto e configure o `.env` com sua chave da Ollama Cloud
-2. Instale dependências e execute:
-   ```bash
-   cd projetos_langchain_local_aluno/Aula_01_O_que_e_IA_Da_ficcao_a_realidade
-   python3 -m venv .venv && source .venv/bin/activate
-   pip install -r requirements.txt
-   python main.py
-   ```
-
-### Setup automático
-
-```bash
-# macOS/Linux
-cd projetos_langchain_local_aluno/Aula_01_O_que_e_IA_Da_ficcao_a_realidade
-chmod +x ../setup.sh && ../setup.sh
-
-# Windows PowerShell
-cd projetos_langchain_local_aluno/Aula_01_O_que_e_IA_Da_ficcao_a_realidade
-..\setup.ps1
-```
 
 ---
 
@@ -543,7 +592,7 @@ docker exec -it fiap-ollama ollama list
 
 ### Espaço insuficiente
 
-O setup completo (`fiap-ai-lab-complete`) pode consumir ~15 GB. Use o setup leve (`fiap-openwebui-ollama-setup`) se tiver pouco espaço (~4 GB).
+O setup completo (`aulas/fiap-ai-lab-complete`) pode consumir ~15 GB. Use o setup leve (`aulas/fiap-openwebui-ollama-setup`) se tiver pouca espaço (~4 GB).
 
 ---
 
