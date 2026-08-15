@@ -1,6 +1,0 @@
-# Dependências do projeto — Aula 02: Como um LLM pensa
-# Instale com:  pip install -r requirements.txt
-
-langchain-ollama
-langchain-core
-python-dotenv

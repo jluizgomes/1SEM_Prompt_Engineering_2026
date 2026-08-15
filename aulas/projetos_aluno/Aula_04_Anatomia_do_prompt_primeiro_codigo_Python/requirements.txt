@@ -1,6 +1,0 @@
-# Dependências do projeto — Aula 04: Anatomia do prompt
-# Instale com:  pip install -r requirements.txt
-
-langchain-ollama
-langchain-core
-python-dotenv

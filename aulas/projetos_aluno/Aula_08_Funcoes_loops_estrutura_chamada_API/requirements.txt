@@ -1,6 +1,0 @@
-# Dependências do projeto — Aula 08: Funções e loops
-# Instale com:  pip install -r requirements.txt
-
-langchain-ollama
-langchain-core
-python-dotenv

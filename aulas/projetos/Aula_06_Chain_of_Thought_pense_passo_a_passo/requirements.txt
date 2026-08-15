@@ -1,6 +1,0 @@
-# Dependências do projeto — Aula 06: Chain of Thought
-# Instale com:  pip install -r requirements.txt
-
-langchain-ollama
-langchain-core
-python-dotenv

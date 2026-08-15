@@ -1,0 +1,2 @@
+# Este aula não precisa de dependências externas
+# Apenas Python padrão
