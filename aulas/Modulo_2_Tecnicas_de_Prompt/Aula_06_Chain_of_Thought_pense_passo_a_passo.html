@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 06 — Chain-of-Thought: pense passo a passo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{--fiap-pink:#ED145B;--fiap-dark:#f5f6fa;--fiap-surface:#ffffff;--fiap-surface2:#f0f1f5;--fiap-border:#e2e4ec;--fiap-text:#1a1b2f;--fiap-muted:#4e4e68;--fiap-white:#1a1b2f;--fiap-green:#29AF8C;--fiap-blue:#3D9CCC;--fiap-purple:#7C60C6;--fiap-orange:#D58C2E;--fiap-red:#C9492C;--code-bg:#1e293b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',-apple-system,sans-serif;background:var(--fiap-dark);color:var(--fiap-text);line-height:1.7;font-size:15px}
+  .slide{width:100%;min-height:100vh;padding:60px 80px;position:relative;border-bottom:1px solid var(--fiap-border);display:flex;flex-direction:column;overflow:hidden}
+  .slide::before{content:'';position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(237,20,91,.04) 0%,transparent 70%);pointer-events:none}
+  .slide-number{position:absolute;bottom:30px;right:40px;font-size:12px;color:var(--fiap-muted);font-weight:500;letter-spacing:1px}
+  .slide-footer{position:absolute;bottom:30px;left:80px;font-size:11px;color:rgba(78,78,104,.6)}
+  .slide-cover{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 50%,#eff6ff 100%);justify-content:center;align-items:center;text-align:center;padding:60px}
+  .cover-course{font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:20px}
+  .cover-title{font-size:44px;font-weight:800;color:var(--fiap-white);line-height:1.15;margin-bottom:16px;max-width:800px}
+  .cover-subtitle{font-size:18px;color:var(--fiap-muted);margin-bottom:40px}
+  .cover-meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+  .cover-meta-item{background:rgba(237,20,91,.1);border:1px solid rgba(237,20,91,.25);padding:8px 18px;border-radius:8px;font-size:13px;color:var(--fiap-text);font-weight:500}
+  .slide-section{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 100%);justify-content:center;align-items:flex-start;padding:80px 100px}
+  .section-number{font-size:72px;font-weight:900;color:var(--fiap-pink);opacity:.25;line-height:1;margin-bottom:10px}
+  .section-title{font-size:38px;font-weight:800;color:var(--fiap-white);line-height:1.2;margin-bottom:16px}
+  .section-desc{font-size:16px;color:var(--fiap-muted);max-width:600px}
+  .slide-content{background:var(--fiap-dark);padding-top:50px}
+  .slide-content h2{font-size:28px;font-weight:800;color:var(--fiap-white);margin-bottom:32px;padding-bottom:12px;border-bottom:2px solid var(--fiap-pink);display:inline-block}
+  .slide-content h3{font-size:20px;font-weight:700;color:var(--fiap-pink);margin:28px 0 16px}
+  .slide-content p{color:var(--fiap-text);margin-bottom:16px;max-width:950px}
+  .slide-content strong{color:var(--fiap-white)}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin:24px 0}
+  .card{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:24px}
+  .card-icon{font-size:28px;margin-bottom:12px}
+  .card-title{font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px}
+  .card-body{font-size:13px;color:var(--fiap-muted);line-height:1.6}
+  .data-table{width:100%;border-collapse:collapse;margin:20px 0;background:var(--fiap-surface);border-radius:12px;overflow:hidden;border:1px solid var(--fiap-border)}
+  .data-table th{background:var(--fiap-surface2);padding:12px 18px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-pink);border-bottom:1px solid var(--fiap-border)}
+  .data-table td{padding:12px 18px;font-size:13px;color:var(--fiap-text);border-bottom:1px solid rgba(0,0,0,.06);vertical-align:top}
+  .data-table tr:last-child td{border-bottom:none}
+  .callout{background:var(--fiap-surface);border-left:4px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0}
+  .callout-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--fiap-pink);margin-bottom:8px}
+  .callout-body{font-size:14px;color:var(--fiap-muted);line-height:1.6}
+  .callout-green{border-left-color:var(--fiap-green)}.callout-green .callout-title{color:var(--fiap-green)}
+  .callout-blue{border-left-color:var(--fiap-blue)}.callout-blue .callout-title{color:var(--fiap-blue)}
+  .callout-purple{border-left-color:var(--fiap-purple)}.callout-purple .callout-title{color:var(--fiap-purple)}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .badge-green{background:rgba(41,175,140,.12);color:var(--fiap-green)}
+  .badge-blue{background:rgba(61,156,204,.12);color:var(--fiap-blue)}
+  .badge-purple{background:rgba(124,96,198,.12);color:var(--fiap-purple)}
+  .badge-orange{background:rgba(213,140,46,.12);color:var(--fiap-orange)}
+  .badge-red{background:rgba(201,73,44,.12);color:var(--fiap-red)}
+  .exercise{background:linear-gradient(135deg,rgba(41,175,140,.06) 0%,rgba(61,156,204,.06) 100%);border:1px solid rgba(41,175,140,.2);border-radius:14px;padding:28px;margin:28px 0}
+  .exercise-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .exercise-icon{width:40px;height:40px;background:rgba(41,175,140,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .exercise-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-green)}
+  .exercise-title{font-size:17px;font-weight:700;color:var(--fiap-white)}
+  .exercise-steps{margin:16px 0;padding-left:20px}
+  .exercise-steps li{color:var(--fiap-text);font-size:14px;margin-bottom:8px;line-height:1.6}
+  .exercise-hint{background:rgba(61,156,204,.08);border:1px solid rgba(61,156,204,.2);border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:var(--fiap-blue)}
+  .difficulty .star{color:var(--fiap-orange);font-size:14px}
+  .difficulty .star.empty{opacity:.25}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:20px 0}
+  .agenda-item{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;margin-bottom:10px}
+  .agenda-num{width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--fiap-pink);flex-shrink:0}
+  .agenda-text{font-size:14px;font-weight:600;color:var(--fiap-white);flex:1}
+  .agenda-time{font-size:12px;font-weight:600;color:var(--fiap-muted);background:var(--fiap-surface2);padding:4px 10px;border-radius:6px}
+  .slide-closing{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 50%,#ecfdf5 100%);justify-content:center;align-items:center;text-align:center}
+  .next-class{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:14px;padding:32px 48px;margin-top:40px;text-align:left;max-width:600px}
+  .next-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:8px}
+  .next-title{font-size:18px;font-weight:700;color:var(--fiap-white);margin-bottom:6px}
+  .next-desc{font-size:13px;color:var(--fiap-muted)}
+  .ref-list{margin:16px 0}
+  .ref-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .ref-tag{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;margin-top:2px;flex-shrink:0}
+  .ref-tag-book{background:rgba(108,99,255,.15);color:#a89cff}
+  .ref-tag-doc{background:rgba(255,209,102,.12);color:#ffd166}
+  .ref-tag-paper{background:rgba(255,107,107,.12);color:#ff9a9a}
+  .ref-text{font-size:12px;color:var(--fiap-muted);line-height:1.5}
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;margin:16px 0;overflow:visible;font-family:'JetBrains Mono',monospace}
+  .code-header{background:#0f172a;padding:10px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155}
+  .code-dot{width:10px;height:10px;border-radius:50%}
+  .code-dot.red{background:#ff5f57}.code-dot.yellow{background:#febc2e}.code-dot.green{background:#28c840}
+  .code-filename{font-size:12px;color:#94a3b8;margin-left:8px}
+  .code-body{padding:20px;font-size:13px;line-height:1.9}
+  .code-body pre{margin:0;white-space:pre;overflow-x:auto}
+  .kw{color:#c678dd}.fn{color:#61afef}.st{color:#98c379}.cm{color:#94a3b8;font-style:italic}
+  .nb{color:#e5c07b}.num{color:#d19a66}.op{color:#56b6c2}.tx{color:#abb2bf}.va{color:#e06c75}
+  .gap{background:rgba(237,20,91,.15);border:1px dashed rgba(237,20,91,.5);border-radius:4px;padding:0 6px;color:#ED145B;font-style:italic;font-family:'JetBrains Mono',monospace;font-size:12px}
+  /* CoT comparação */
+  .cot-compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+  .cot-box{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden}
+  .cot-box-header{padding:10px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--fiap-border)}
+  .cot-box-body{padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fiap-muted);line-height:1.8;min-height:140px}
+  .cot-box-result{padding:10px 16px;font-size:12px;border-top:1px solid var(--fiap-border);background:var(--fiap-surface2)}
+  /* raciocínio passo a passo */
+  .step-chain{display:flex;flex-direction:column;gap:0;margin:16px 0}
+  .step-item{display:flex;gap:16px;position:relative;padding-bottom:16px}
+  .step-item:last-child{padding-bottom:0}
+  .step-item:not(:last-child)::before{content:'';position:absolute;left:17px;top:36px;bottom:0;width:2px;background:var(--fiap-border)}
+  .step-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;z-index:1}
+  .step-body{flex:1;padding-top:6px}
+  .step-label{font-size:11px;font-weight:700;color:var(--fiap-pink);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
+  .step-text{font-size:13px;color:var(--fiap-muted);line-height:1.6}
+  @media print{.slide{page-break-after:always;min-height:auto;padding:30px 40px}}
+/* ===== SCROLL-SUAVE-2026 ===== */
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{scroll-behavior:smooth}
+  .slide{scroll-margin-top:0}
+  @media (prefers-reduced-motion:reduce){html,body{scroll-behavior:auto}}
+
+/* ===== ADDON-FIAP-2026 ===== */
+  .glossary{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin:20px 0}
+  .gl-item{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:14px 18px}
+  .gl-item.gl-blue{border-left-color:var(--fiap-blue)}
+  .gl-item.gl-green{border-left-color:var(--fiap-green)}
+  .gl-item.gl-purple{border-left-color:var(--fiap-purple)}
+  .gl-item.gl-orange{border-left-color:var(--fiap-orange)}
+  .gl-term{font-size:14px;font-weight:800;color:var(--fiap-white);margin-bottom:4px}
+  .gl-pron{font-size:11px;font-weight:500;color:var(--fiap-muted);font-style:italic;margin-left:6px}
+  .gl-def{font-size:12.5px;color:var(--fiap-muted);line-height:1.55}
+  .gl-analogy{font-size:12px;color:var(--fiap-blue);margin-top:6px;padding-top:6px;border-top:1px dashed var(--fiap-border)}
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;overflow:visible;margin:18px 0}
+  .code-header{background:#0f172a;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #334155;display:flex;justify-content:space-between;gap:12px}
+  .code-body{padding:16px 18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.65;color:#e2e8f0;overflow-x:auto;white-space:pre}
+  .code-body .kw{color:#c678dd}.code-body .fn{color:#61afef}.code-body .st{color:#98c379}
+  .code-body .cm{color:#94a3b8;font-style:italic}.code-body .nb{color:#e5c07b}
+  .code-body .num{color:#d19a66}.code-body .op{color:#56b6c2}.code-body .tx{color:#e2e8f0}
+  .diagram{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .diagram-cap{font-size:11.5px;color:var(--fiap-muted);text-align:center;margin-top:10px;font-style:italic}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:20px 0}
+  .metric{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;padding:16px;text-align:center}
+  .metric-val{font-size:26px;font-weight:900;color:var(--fiap-pink);line-height:1}
+  .metric-lbl{font-size:11px;color:var(--fiap-muted);margin-top:6px;line-height:1.4}
+  .prompt-box{border-radius:10px;padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+  .prompt-good{background:rgba(41,175,140,.07);border:1px solid rgba(41,175,140,.3);color:var(--fiap-text)}
+  .prompt-bad{background:rgba(201,73,44,.07);border:1px solid rgba(201,73,44,.3);color:var(--fiap-text)}
+  .prompt-label{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-family:'Inter',sans-serif}
+  .prompt-good .prompt-label{color:var(--fiap-green)}.prompt-bad .prompt-label{color:var(--fiap-red)}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:20px 0}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .callout-red{border-left-color:var(--fiap-red)}.callout-red .callout-title{color:var(--fiap-red)}
+  .ref-tag-law{background:rgba(41,175,140,.15);color:#1f8f72}
+  .checklist{list-style:none;margin:16px 0}
+  .checklist li{padding:7px 0 7px 28px;position:relative;font-size:13.5px;color:var(--fiap-text)}
+  .checklist li::before{content:'\2713';position:absolute;left:0;color:var(--fiap-green);font-weight:800}
+  .pause{background:rgba(213,140,46,.08);border:1px dashed rgba(213,140,46,.45);border-radius:10px;padding:12px 18px;margin:18px 0;font-size:13px;color:#a8701f;font-weight:600}
+  .kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .kpi{background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--fiap-text)}
+  .data-table td code,.gl-def code,.callout-body code,.slide-content p code{font-family:'JetBrains Mono',monospace;font-size:.9em;background:var(--fiap-surface2);padding:1px 5px;border-radius:4px;color:#b3186a}
+  /* ---- graficos interativos ---- */
+  .chart{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:18px 20px 14px;margin:20px 0}
+  .chart-title{font-size:13px;font-weight:800;color:var(--fiap-white);margin-bottom:2px}
+  .chart-sub{font-size:11.5px;color:var(--fiap-muted);margin-bottom:12px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chart-key{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--fiap-muted);background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:20px;padding:4px 11px;cursor:pointer;user-select:none;transition:opacity .15s}
+  .chart-key.off{opacity:.35}
+  .chart-key i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .chart-hint{font-size:11px;color:var(--fiap-muted);font-style:italic;margin-top:10px;text-align:center}
+  .fq-bar,.fq-dot,.fq-seg{cursor:pointer;transition:opacity .15s,transform .15s}
+  .fq-bar:hover,.fq-dot:hover,.fq-seg:hover{opacity:.78}
+  .fq-tip{position:fixed;z-index:9999;pointer-events:none;background:#1a1b2f;color:#fff;font-family:'Inter',sans-serif;font-size:12px;line-height:1.5;padding:9px 13px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:290px;opacity:0;transition:opacity .12s}
+  .fq-tip.on{opacity:1}
+  .fq-tip b{color:#ff7aa8;display:block;margin-bottom:3px;font-size:12.5px}
+  /* ---- diagramas com hotspot clicavel ---- */
+  .diagram [data-info]{cursor:pointer}
+  .diagram [data-info]:hover{filter:brightness(.94)}
+  .diagram-info{margin-top:12px;background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:12px 16px;font-size:12.5px;color:var(--fiap-muted);line-height:1.6;min-height:52px}
+  .diagram-info b{color:var(--fiap-white);display:block;margin-bottom:3px;font-size:13px}
+  /* ---- slider interativo ---- */
+  .ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+  .ctrl label{font-size:12px;font-weight:700;color:var(--fiap-text)}
+  .ctrl input[type=range]{flex:1;min-width:180px;accent-color:var(--fiap-pink)}
+  .ctrl output{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--fiap-pink);min-width:44px;text-align:right}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+  .tab{font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;border:1px solid var(--fiap-border);background:var(--fiap-surface2);color:var(--fiap-muted);cursor:pointer;user-select:none;transition:all .15s}
+  .tab.on{background:var(--fiap-pink);border-color:var(--fiap-pink);color:#fff}
+  .tab-panel{display:none}
+  .tab-panel.on{display:block}
+
+</style>
+
+<style id="slide-nav-style">
+  html, body { overflow: visible !important; height: auto !important; scroll-behavior: smooth; }
+  .slide { height: auto !important; min-height: 100vh; max-height: none !important; overflow: visible !important; }
+  @media print {
+    .slide { page-break-after: always; min-height: auto; padding: 30px 40px; }
+    .slide-number, .slide-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="slide-viewport">
+
+
+<!-- S01 CAPA -->
+<div class="slide slide-cover">
+  <svg width="160" height="40" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="margin-top:40px" class="cover-course">PROMPT ENGINEERING AND ARTIFICIAL INTELLIGENCE</div>
+  <div class="cover-title">Chain-of-Thought<br>"Pense passo a passo"</div>
+  <div class="cover-subtitle">Aula 06/14 — Módulo 2: Técnicas de Prompt</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">👨‍🏫 Prof. Jorge Luiz Gomes</div>
+    <div class="cover-meta-item">⏱️ 1h40min</div>
+    <div class="cover-meta-item">🧠 CoT zero-shot e few-shot</div>
+    <div class="cover-meta-item">💻 Lab: escrever o raciocínio</div>
+  </div>
+  <div class="slide-number">01 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Agenda da Aula</h2>
+  <div class="agenda-item"><div class="agenda-num">1</div><div class="agenda-text">Revisão + Glossário de hoje (3 termos)</div><div class="agenda-time">10 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">2</div><div class="agenda-text">Por que o modelo erra sem CoT — o problema do atalho</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">3</div><div class="agenda-text">CoT zero-shot: "pense passo a passo" no prompt</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">4</div><div class="agenda-text">CoT few-shot: mostrar o raciocínio nos exemplos</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">5</div><div class="agenda-text">🚀 Demo ao vivo: com e sem CoT no mesmo problema</div><div class="agenda-time">20 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">6</div><div class="agenda-text">💻 Lab: escrever os passos de raciocínio, não o código</div><div class="agenda-time">25 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">7</div><div class="agenda-text">Síntese + preview Aula 07</div><div class="agenda-time">10 min</div></div>
+  <div class="callout callout-blue" style="margin-top:16px">
+    <div class="callout-title">🔗 Conexão com as aulas anteriores</div>
+    <div class="callout-body">Na Aula 05 você viu que Few-shot mostra exemplos de input → output. O CoT few-shot vai além: mostra o <strong>raciocínio intermediário</strong> entre input e output. É como a diferença entre mostrar a resposta do exercício e mostrar a resolução completa.</div>
+  </div>
+  <div class="slide-number">02 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Glossário da Aula 06</h2>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card" style="border-top:3px solid var(--fiap-purple)">
+      <div class="card-icon">🔗</div>
+      <div class="card-title">Chain-of-Thought (CoT)</div>
+      <div class="card-body">Técnica de prompting que instrui o modelo a <strong>externalizar o raciocínio</strong> passo a passo antes de dar a resposta final.<br><br><strong>Analogia:</strong> pedir para o aluno mostrar a conta no caderno, não só escrever o resultado. O processo visível permite identificar e corrigir erros.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-blue)">
+      <div class="card-icon">🧩</div>
+      <div class="card-title">Raciocínio encadeado</div>
+      <div class="card-body">Sequência de passos lógicos onde cada passo usa o resultado do anterior para chegar à conclusão. É o que o CoT força o modelo a produzir.<br><br><strong>Analogia:</strong> uma receita — cada etapa depende do que foi feito na anterior. Pular etapas queima o bolo.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-green)">
+      <div class="card-icon">✅</div>
+      <div class="card-title">Verificação de resultado</div>
+      <div class="card-body">Passo final do CoT onde o modelo confere se a resposta é consistente com o raciocínio produzido. Reduz alucinações em tarefas lógicas.<br><br><strong>Analogia:</strong> substituir a resposta encontrada de volta na equação original para verificar.</div>
+    </div>
+  </div>
+  <div class="callout callout-orange">
+    <div class="callout-title">💡 Por que CoT importa</div>
+    <div class="callout-body">LLMs são essencialmente máquinas de completar texto com a sequência mais provável. Para tarefas simples, isso funciona. Para tarefas com múltiplas etapas lógicas, o "atalho para a resposta mais provável" frequentemente leva à resposta errada. <strong>CoT força o modelo a ir devagar — e acertar mais.</strong></div>
+  </div>
+  <div class="slide-number">03 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">01</div>
+  <div class="section-title">Por que o modelo<br>erra sem CoT</div>
+  <div class="section-desc">O LLM não "pensa" — prevê o próximo token. Para questões simples, isso funciona. Para raciocínio em múltiplas etapas, o atalho para a "resposta mais provável" frequentemente é a resposta errada.</div>
+  <div class="slide-number">04 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O problema do atalho — como o modelo "chuta"</h2>
+  <p>Lembre-se da Aula 02: o modelo prevê o próximo token mais provável. Para raciocínio complexo, esse atalho falha.</p>
+  <div class="cot-compare">
+    <div class="cot-box">
+      <div class="cot-box-header" style="background:rgba(201,73,44,.08);color:var(--fiap-red)">❌ Sem CoT — resposta direta</div>
+      <div class="cot-box-body">
+        <strong style="color:#abb2bf">Pergunta:</strong> Maria tem 3 vezes a idade de João. Daqui a 5 anos, Maria terá o dobro da idade de João. Qual é a idade atual de João?<br><br>
+        <strong style="color:#abb2bf">Modelo responde:</strong> "João tem 5 anos."
+      </div>
+      <div class="cot-box-result"><strong style="color:var(--fiap-red)">❌ Errado.</strong> O modelo previu uma resposta plausível sem calcular.</div>
+    </div>
+    <div class="cot-box">
+      <div class="cot-box-header" style="background:rgba(41,175,140,.08);color:var(--fiap-green)">✅ Com CoT — raciocínio explícito</div>
+      <div class="cot-box-body">
+        <strong style="color:#abb2bf">Prompt:</strong> "...Pense passo a passo."<br><br>
+        <strong style="color:#abb2bf">Modelo responde:</strong> "Seja J a idade de João. Maria = 3J. Daqui a 5 anos: 3J+5 = 2(J+5). 3J+5 = 2J+10. J = 5."
+      </div>
+      <div class="cot-box-result"><strong style="color:var(--fiap-green)">✅ Correto.</strong> Ao escrever o processo, o modelo se autocorrige.</div>
+    </div>
+  </div>
+  <div class="callout callout-purple">
+    <div class="callout-title">🧠 Por que funciona? O mecanismo</div>
+    <div class="callout-body">Quando o modelo escreve o raciocínio, cada passo entra no contexto e <strong>influencia o próximo token</strong>. O raciocínio intermediário serve como âncora — o modelo não pode contradizê-lo na resposta final sem que isso gere uma sequência improvável. É autocorreção emergente via contexto.</div>
+  </div>
+  <div class="slide-number">05 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Quando o atalho falha — tarefas que CoT ajuda mais</h2>
+  <table class="data-table">
+    <thead><tr><th>Tipo de tarefa</th><th>Sem CoT</th><th>Com CoT</th><th>Ganho</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Matemática multi-etapa</strong></td>
+        <td>Prevê resultado plausível, frequentemente errado</td>
+        <td>Calcula etapa por etapa, verifica no final</td>
+        <td><span class="badge badge-green">Alto</span></td>
+      </tr>
+      <tr>
+        <td><strong>Raciocínio lógico</strong></td>
+        <td>Conclui pela associação mais comum, não pela lógica</td>
+        <td>Testa cada condição explicitamente</td>
+        <td><span class="badge badge-green">Alto</span></td>
+      </tr>
+      <tr>
+        <td><strong>Análise de causa raiz</strong></td>
+        <td>Aponta causa mais superficial e óbvia</td>
+        <td>Percorre causas → efeitos até a raiz</td>
+        <td><span class="badge badge-green">Alto</span></td>
+      </tr>
+      <tr>
+        <td><strong>Decisão com múltiplos critérios</strong></td>
+        <td>Escolhe opção mais mencionada no treinamento</td>
+        <td>Avalia cada critério, pondera, decide</td>
+        <td><span class="badge badge-purple">Médio</span></td>
+      </tr>
+      <tr>
+        <td><strong>Tradução simples</strong></td>
+        <td>Acerta diretamente</td>
+        <td>Sem diferença significativa</td>
+        <td><span class="badge badge-orange">Baixo</span></td>
+      </tr>
+      <tr>
+        <td><strong>Pergunta factual direta</strong></td>
+        <td>"Qual a capital do Brasil?" → Brasília ✅</td>
+        <td>Desnecessário — resposta direta é suficiente</td>
+        <td><span class="badge badge-red">Negativo</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-orange">
+    <div class="callout-title">⚠️ CoT não ajuda em tudo</div>
+    <div class="callout-body">Para perguntas simples de lookup (capital de um país, data de um evento, definição direta), CoT adiciona tokens e latência sem ganho de qualidade. <strong>Use CoT para raciocínio. Use resposta direta para fatos.</strong></div>
+  </div>
+  <div class="slide-number">06 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">02</div>
+  <div class="section-title">CoT Zero-shot</div>
+  <div class="section-desc">"Pense passo a passo." Três palavras que aumentam significativamente a precisão do modelo em tarefas de raciocínio — sem nenhum exemplo.</div>
+  <div class="slide-number">07 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>CoT Zero-shot — a técnica mais simples e mais poderosa</h2>
+  <p>Descoberta por Kojima et al. (2022): simplesmente adicionar "Pense passo a passo" ao prompt melhora drasticamente a precisão em raciocínio.</p>
+  <div class="callout callout-purple">
+    <div class="callout-title">📌 A frase mágica — e por que funciona</div>
+    <div class="callout-body">
+      <strong>"Pense passo a passo antes de responder."</strong><br><br>
+      Esta instrução ativa um modo de geração diferente no modelo. Em vez de pular diretamente para o token mais provável da resposta, o modelo primeiro gera tokens de raciocínio intermediário — e cada token de raciocínio serve de âncora para o próximo, criando uma cadeia de pensamento coerente.
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:16px">
+    <div>
+      <h3>Variações que funcionam</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace">"Pense passo a passo."</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace">"Let's think step by step."</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace">"Raciocine em voz alta antes de concluir."</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace">"Analise cada etapa antes de responder."</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;font-family:'JetBrains Mono',monospace">"Mostre seu raciocínio, depois conclua."</div>
+      </div>
+    </div>
+    <div>
+      <h3>Onde colocar no prompt</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+        <div class="callout callout-green" style="margin:0">
+          <div class="callout-title">✅ No final da instrução (mais comum)</div>
+          <div class="callout-body" style="font-family:'JetBrains Mono',monospace;font-size:12px">"Resolva o problema abaixo. <strong>Pense passo a passo.</strong> [problema]"</div>
+        </div>
+        <div class="callout callout-blue" style="margin:0">
+          <div class="callout-title">✅ No formato de saída</div>
+          <div class="callout-body" style="font-family:'JetBrains Mono',monospace;font-size:12px">"Formato: 1) Liste os passos 2) Calcule cada etapa 3) Conclua."</div>
+        </div>
+        <div class="callout" style="margin:0;border-left-color:var(--fiap-red)">
+          <div class="callout-title" style="color:var(--fiap-red)">❌ No sistema — funciona menos</div>
+          <div class="callout-body">Colocar CoT apenas no system prompt tem efeito menor do que colocar diretamente na instrução da tarefa.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">08 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>CoT Zero-shot na prática — 3 aplicações</h2>
+  <div style="display:flex;flex-direction:column;gap:16px;margin:16px 0">
+    <div style="background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden">
+      <div style="padding:10px 16px;background:rgba(124,96,198,.06);font-size:11px;font-weight:700;color:var(--fiap-purple);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--fiap-border)">Exemplo 1 — Análise de causa raiz</div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--fiap-red);margin-bottom:6px">SEM CoT</div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7">"Por que as vendas caíram em março?"<br>→ "Sazonalidade do mercado."</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--fiap-green);margin-bottom:6px">COM CoT</div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7">"...Pense passo a passo."<br>→ "1) Março não é historicamente fraco neste setor. 2) O que mudou? 3) Houve aumento de preço em fev. 4) Aumento de preço → redução de conversão. Causa provável: reajuste de preço."</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden">
+      <div style="padding:10px 16px;background:rgba(61,156,204,.06);font-size:11px;font-weight:700;color:var(--fiap-blue);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--fiap-border)">Exemplo 2 — Decisão com critérios</div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--fiap-red);margin-bottom:6px">SEM CoT</div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7">"Devo usar SQL ou NoSQL para este sistema?"<br>→ "Depende do caso de uso."</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--fiap-green);margin-bottom:6px">COM CoT</div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7">"...Pense passo a passo."<br>→ "1) Dados estruturados? Sim. 2) Relacionamentos complexos? Sim. 3) Escala previsível? Sim. 4) ACID necessário? Sim → SQL é a escolha mais adequada."</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden">
+      <div style="padding:10px 16px;background:rgba(41,175,140,.06);font-size:11px;font-weight:700;color:var(--fiap-green);text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--fiap-border)">Exemplo 3 — Debug de código</div>
+      <div style="padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--fiap-red);margin-bottom:6px">SEM CoT</div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7">"Por que este código não funciona? [código]"<br>→ "Há um erro de indentação."</div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--fiap-green);margin-bottom:6px">COM CoT</div>
+          <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7">"...Pense passo a passo."<br>→ "1) Linha 3: variável x não definida antes do uso. 2) Linha 7: loop nunca termina — condição de parada ausente. 3) Linha 12: retorno dentro do try sem except. Principais erros: [lista]."</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">09 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">03</div>
+  <div class="section-title">CoT Few-shot</div>
+  <div class="section-desc">Mostrar o raciocínio nos exemplos — não só a resposta. É a combinação das técnicas das Aulas 05 e 06: exemplos com o processo de pensamento visível.</div>
+  <div class="slide-number">10 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>CoT Few-shot — mostrar o processo, não só a resposta</h2>
+  <p>A diferença entre Few-shot padrão e CoT Few-shot é o que está entre o input e o output do exemplo:</p>
+  <div class="two-col">
+    <div>
+      <div class="callout" style="border-left-color:var(--fiap-orange)">
+        <div class="callout-title" style="color:var(--fiap-orange)">Few-shot padrão (Aula 05)</div>
+        <div class="callout-body" style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9">
+          Pergunta: "17 ovelhas, todas menos 9 morrem. Quantas sobram?"<br>
+          Resposta: 9<br><br>
+          Pergunta: "Tenho 10 maçãs, como 3. Quantas restam?"<br>
+          Resposta: 7<br><br>
+          Pergunta: "5 passarinhos, 2 voam. Quantos ficam?"<br>
+          Resposta: <span style="color:#ED145B">←modelo completa</span>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="callout callout-green">
+        <div class="callout-title">CoT Few-shot (esta aula)</div>
+        <div class="callout-body" style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.9">
+          Pergunta: "17 ovelhas, todas menos 9 morrem. Quantas sobram?"<br>
+          <span style="color:#94a3b8;font-style:italic"># Raciocínio:</span><br>
+          <span style="color:#98c379">Passo 1: "todas menos 9 morrem" = 9 sobrevivem<br>
+          Passo 2: não importa o total inicial<br>
+          Conclusão: 9 ovelhas</span><br>
+          Resposta: 9<br><br>
+          Pergunta: "5 passarinhos, 2 voam. Quantos ficam?"<br>
+          <span style="color:#94a3b8;font-style:italic"># Raciocínio:</span><br>
+          <span style="color:#ED145B">←modelo gera raciocínio e resposta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-blue" style="margin-top:8px">
+    <div class="callout-title">💡 Por que funciona melhor que Few-shot padrão?</div>
+    <div class="callout-body">O modelo não aprende só "qual é a resposta certa" — aprende <strong>como chegar lá</strong>. Para tarefas que envolvem raciocínio em múltiplas etapas, o processo é a parte mais importante a ensinar.</div>
+  </div>
+  <div class="slide-number">11 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>CoT Few-shot — exemplo completo para análise de suporte</h2>
+  <p>Um exemplo real: classificar prioridade de ticket COM raciocínio explícito nos exemplos:</p>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">cot_few_shot_exemplo.txt</span></div>
+    <div class="code-body"><pre><span class="tx">Você é um analista de suporte. Classifique a prioridade do ticket</span>
+<span class="tx">como CRÍTICO, ALTO ou NORMAL. Mostre seu raciocínio antes de concluir.</span>
+
+<span class="cm">--- Exemplo 1 ---</span>
+<span class="tx">Ticket: "Sistema de pagamento fora do ar para todos os clientes."</span>
+<span class="st">Raciocínio:</span>
+<span class="st">- Impacto: todos os clientes afetados (escopo total)</span>
+<span class="st">- Funcionalidade: pagamento = funcionalidade core do negócio</span>
+<span class="st">- Urgência: cada minuto gera perda de receita direta</span>
+<span class="st">Conclusão: CRÍTICO</span>
+
+<span class="cm">--- Exemplo 2 ---</span>
+<span class="tx">Ticket: "Relatório mensal do usuário João Silva não carrega."</span>
+<span class="st">Raciocínio:</span>
+<span class="st">- Impacto: apenas 1 usuário específico</span>
+<span class="st">- Funcionalidade: relatório = importante mas não core</span>
+<span class="st">- Urgência: pode aguardar até o próximo dia útil</span>
+<span class="st">Conclusão: NORMAL</span>
+
+<span class="cm">--- Novo ticket a classificar ---</span>
+<span class="tx">Ticket: "30% dos usuários não conseguem fazer login desde 14h."</span>
+<span class="st">Raciocínio:</span>
+<span class="va">← modelo gera aqui</span></pre>
+    </div>
+  </div>
+  <div class="callout callout-green">
+    <div class="callout-title">🎯 O que o modelo aprende com esses exemplos</div>
+    <div class="callout-body">O modelo aprende os 3 critérios de avaliação (impacto, funcionalidade, urgência) — mesmo sem você listá-los explicitamente como regras. Os exemplos transmitem o framework de decisão de forma mais eficaz do que uma lista de regras.</div>
+  </div>
+  <div class="slide-number">12 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que observar na demo — anote ao vivo</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0">
+    <div style="background:rgba(201,73,44,.06);border:1px solid rgba(201,73,44,.2);border-radius:10px;padding:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-red);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">SEM CoT</div>
+      <div style="min-height:60px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:6px;padding:10px;font-size:13px;color:var(--fiap-muted);font-style:italic">Resultado ao vivo →</div>
+      <div style="font-size:12px;color:var(--fiap-muted);margin-top:8px">Acertou? Resposta foi curta ou longa? Deu explicação mesmo sem pedir?</div>
+    </div>
+    <div style="background:rgba(124,96,198,.06);border:1px solid rgba(124,96,198,.2);border-radius:10px;padding:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">CoT ZERO-SHOT</div>
+      <div style="min-height:60px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:6px;padding:10px;font-size:13px;color:var(--fiap-muted);font-style:italic">Resultado ao vivo →</div>
+      <div style="font-size:12px;color:var(--fiap-muted);margin-top:8px">Os passos fazem sentido? O modelo se autocorrigiu em algum passo? A resposta final está certa?</div>
+    </div>
+    <div style="background:rgba(41,175,140,.06);border:1px solid rgba(41,175,140,.2);border-radius:10px;padding:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-green);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">CoT FEW-SHOT</div>
+      <div style="min-height:60px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:6px;padding:10px;font-size:13px;color:var(--fiap-muted);font-style:italic">Resultado ao vivo →</div>
+      <div style="font-size:12px;color:var(--fiap-muted);margin-top:8px">Seguiu o formato "Raciocínio: ... Resposta: X" dos exemplos? O processo foi mais estruturado?</div>
+    </div>
+  </div>
+  <div class="callout callout-purple">
+    <div class="callout-title">🎯 O que esperamos ver</div>
+    <div class="callout-body">
+      <strong>Sem CoT:</strong> modelos modernos como Qwen3.6 frequentemente acertam problemas simples — mas a resposta é imprevisível para problemas mais complexos.<br>
+      <strong>CoT zero-shot:</strong> raciocínio visível, autocorreção emergente, resposta consistente.<br>
+      <strong>CoT few-shot:</strong> raciocínio estruturado seguindo o formato dos exemplos — mais previsível e auditável.
+    </div>
+  </div>
+  <div class="slide-number">13 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">05</div>
+  <div class="section-title">Lab — Notebook Aluno</div>
+  <div class="section-desc">As lacunas estão nos passos de raciocínio dentro do prompt. O código já está completo — você escreve o processo de pensamento.</div>
+  <div class="slide-number">14 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>💻 Notebook Aluno — Complete o raciocínio</h2>
+  <p>O código já está pronto. As <span class="gap">lacunas</span> são os <strong>passos de raciocínio que você precisa escrever</strong>.</p>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">Aula_06_Aluno.ipynb</span></div>
+    <div class="code-body"><pre><span class="cm"># Setup — não modifique</span>
+<span class="tx">!</span><span class="fn">pip install</span> <span class="st">-q ollama</span>
+<span class="kw">import</span> <span class="nb">ollama</span>
+<span class="kw">from</span> <span class="nb">google.colab</span> <span class="kw">import</span> <span class="nb">userdata</span>
+<span class="va">client</span> <span class="op">=</span> <span class="nb">ollama</span><span class="op">.</span><span class="fn">Client</span><span class="op">(</span>
+    <span class="va">host</span><span class="op">=</span><span class="st">"https://api.ollama.com"</span><span class="op">,</span>
+    <span class="va">headers</span><span class="op">={</span><span class="st">"Authorization"</span><span class="op">:</span> <span class="st">f"Bearer {userdata.get('OLLAMA_API_KEY')}"</span><span class="op">}</span>
+<span class="op">)</span>
+
+<span class="cm"># TAREFA: decidir entre 2 opções de tecnologia com CoT few-shot
+# Complete os passos de raciocínio dentro do prompt (não o código!)</span>
+
+<span class="va">cot_few_shot</span> <span class="op">=</span> <span class="st">"""
+Você é um arquiteto de software. Avalie qual tecnologia usar.
+Mostre o raciocínio em passos antes de concluir.
+
+--- Exemplo 1 ---
+Situação: App de e-commerce com 10k usuários, dados de produtos e pedidos.
+Raciocínio:
+</span><span class="gap">👉 Passo 1: descreva o tipo de dado (estruturado? não-estruturado?)</span>
+<span class="st">
+</span><span class="gap">👉 Passo 2: identifique se há relacionamentos importantes</span>
+<span class="st">
+</span><span class="gap">👉 Passo 3: avalie se escala é crítica agora ou futuramente</span>
+<span class="st">
+Conclusão: [banco relacional / NoSQL / outro]
+
+--- Exemplo 2 ---
+Situação: Sistema de logs de servidor, 1M eventos/dia, sem relacionamentos.
+Raciocínio:
+</span><span class="gap">👉 Passo 1: tipo de dado deste cenário</span>
+<span class="st">
+</span><span class="gap">👉 Passo 2: relacionamentos e consultas mais comuns</span>
+<span class="st">
+</span><span class="gap">👉 Passo 3: escala e velocidade de escrita</span>
+<span class="st">
+Conclusão: [banco relacional / NoSQL / outro]
+
+--- Situação a analisar ---
+Situação: Rede social com perfis de usuários, posts, curtidas e seguidores.
+Raciocínio:
+"""</span>
+
+<span class="cm"># Chamada — não modifique</span>
+<span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+    <span class="va">messages</span><span class="op">=[{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="va">cot_few_shot</span><span class="op">}]</span>
+<span class="op">)</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">resp</span><span class="op">[</span><span class="st">"message"</span><span class="op">][</span><span class="st">"content"</span><span class="op">])</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">15 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Quando CoT <em>não</em> ajuda — e pode atrapalhar</h2>
+  <p>CoT é uma ferramenta, não uma bala de prata. Usá-lo desnecessariamente aumenta custo e latência sem ganho.</p>
+  <div class="two-col">
+    <div>
+      <h3>Tarefas onde CoT não ajuda</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:rgba(201,73,44,.06);border-left:3px solid var(--fiap-red);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Perguntas factuais simples:</strong> "Qual é a capital do Japão?" — a resposta direta é "Tóquio". CoT só adiciona verbosidade.
+        </div>
+        <div style="padding:10px 14px;background:rgba(201,73,44,.06);border-left:3px solid var(--fiap-red);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Tradução e formatação:</strong> o modelo não precisa "pensar" para traduzir uma frase. Processo explícito não muda o output.
+        </div>
+        <div style="padding:10px 14px;background:rgba(201,73,44,.06);border-left:3px solid var(--fiap-red);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Classificação com poucas categorias:</strong> "positivo ou negativo?" — few-shot direto é mais eficiente.
+        </div>
+        <div style="padding:10px 14px;background:rgba(201,73,44,.06);border-left:3px solid var(--fiap-red);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Outputs muito curtos necessários:</strong> se você quer só "sim" ou "não", CoT vai gerar parágrafos antes da resposta.
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>Tarefas onde CoT é essencial</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:rgba(41,175,140,.06);border-left:3px solid var(--fiap-green);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Matemática com múltiplas etapas</strong> — qualquer cálculo com 2+ operações encadeadas.
+        </div>
+        <div style="padding:10px 14px;background:rgba(41,175,140,.06);border-left:3px solid var(--fiap-green);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Análise de causa raiz</strong> — "por que X aconteceu?" com múltiplas causas possíveis.
+        </div>
+        <div style="padding:10px 14px;background:rgba(41,175,140,.06);border-left:3px solid var(--fiap-green);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Decisão com critérios múltiplos</strong> — "qual opção escolher dados X, Y, Z?"
+        </div>
+        <div style="padding:10px 14px;background:rgba(41,175,140,.06);border-left:3px solid var(--fiap-green);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Raciocínio jurídico / médico</strong> — aplicar regras complexas a casos específicos.
+        </div>
+        <div style="padding:10px 14px;background:rgba(41,175,140,.06);border-left:3px solid var(--fiap-green);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Debug e revisão de código</strong> — percorrer o fluxo de execução para identificar o problema.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">16 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>CoT no mercado — onde isso é usado hoje</h2>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-purple),var(--fiap-blue))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-purple);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Modelos de Raciocínio</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">CoT integrado ao próprio modelo</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Alguns modelos de raciocínio avançados (linha "o": o1, o1-mini, o3) são treinados para gerar raciocínio interno (chain-of-thought) antes de responder — mesmo sem você pedir "pense passo a passo". São 3–5x mais precisos em matemática e código, mas 5–10x mais lentos e caros.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-blue),var(--fiap-green))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Assistentes Jurídicos</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">CoT para aplicação de jurisprudência</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Ferramentas de IA jurídica usam CoT para percorrer explicitamente as regras aplicáveis → identificar o caso análogo → aplicar ao caso atual. O raciocínio visível é auditável por advogados — essencial para uso profissional.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-green),var(--fiap-orange))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-green);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Ferramentas de Code Review</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">CoT para explicar bugs</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Ferramentas de revisão de código usam CoT para percorrer o fluxo de execução linha a linha, identificar onde a lógica diverge da intenção declarada e propor correção com justificativa. Sem CoT, a explicação seria superficial.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-orange),var(--fiap-pink))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Saúde (Diagnóstico assistido)</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">CoT para raciocínio diagnóstico</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Sistemas de suporte diagnóstico usam CoT para percorrer sintomas → descartar hipóteses → propor diagnóstico diferencial. O raciocínio explícito é obrigatório — médico precisa auditar o processo, não apenas aceitar a conclusão.</div>
+    </div>
+  </div>
+  <div class="callout callout-purple" style="margin-top:16px">
+    <div class="callout-title">📖 Fundamentação — De atalho a deliberação: o salto dos modelos de raciocínio</div>
+    <div class="callout-body">Bornet e Wirtz (<em>Agentic Artificial Intelligence</em>, World Scientific Publishing, 2025) descrevem essa mudança com a distinção psicológica entre Sistema 1 (pensamento rápido, por reconhecimento de padrão) e Sistema 2 (pensamento lento, deliberado). Os LLMs tradicionais operam quase só no Sistema 1 — é exatamente o "atalho" de previsão de próximo token que abriu esta aula (slide 05) e que falha em raciocínio complexo. O lançamento do OpenAI o1 em setembro de 2024 marcou, segundo os autores, uma virada real: em vez de só prever a próxima palavra, esses "modelos de raciocínio" (LRMs) são treinados por reforço para deliberar, testar caminhos diferentes, reconhecer erros e refinar a resposta antes de entregá-la — o card "Modelos de Raciocínio" acima é essa mesma ideia. A diferença central para você, como usuário do prompt: CoT explícito ensina o modelo tradicional a simular esse processo; o modelo de raciocínio já faz isso internamente, por treinamento.</div>
+  </div>
+  <div class="slide-number">17 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Combinando as técnicas — resumo do M2 até aqui</h2>
+  <p>As técnicas não são mutuamente exclusivas — elas se somam:</p>
+  <div class="step-chain">
+    <div class="step-item">
+      <div class="step-dot" style="background:rgba(237,20,91,.12);color:var(--fiap-pink)">A04</div>
+      <div class="step-body">
+        <div class="step-label">4 Componentes (Aula 04)</div>
+        <div class="step-text">A fundação. Todo prompt tem instrução + contexto + input + formato. Sem isso, qualquer técnica avançada perde eficácia.</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-dot" style="background:rgba(61,156,204,.12);color:var(--fiap-blue)">A05</div>
+      <div class="step-body">
+        <div class="step-label">Few-shot (Aula 05)</div>
+        <div class="step-text">Adiciona exemplos de input → output. Calibra formato e categorias. Melhor para tarefas com padrão específico ou terminologia proprietária.</div>
+      </div>
+    </div>
+    <div class="step-item">
+      <div class="step-dot" style="background:rgba(124,96,198,.12);color:var(--fiap-purple)">A06</div>
+      <div class="step-body">
+        <div class="step-label">Chain-of-Thought (esta aula)</div>
+        <div class="step-text">Adiciona raciocínio explícito. Pode ser zero-shot ("pense passo a passo") ou few-shot (raciocínio nos exemplos). Essencial para tarefas que envolvem lógica, decisão e análise.</div>
+      </div>
+    </div>
+    <div class="step-item" style="padding-bottom:0">
+      <div class="step-dot" style="background:rgba(41,175,140,.12);color:var(--fiap-green)">A07</div>
+      <div class="step-body">
+        <div class="step-label">Role prompting + Parâmetros (próxima aula)</div>
+        <div class="step-text">Adiciona persona e controle fino de temperatura/top-p. Você vai ver como combinar role + CoT + few-shot para prompts de nível profissional.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-green" style="margin-top:16px">
+    <div class="callout-title">🏁 CKP02 — semana que vem</div>
+    <div class="callout-body">O CKP02 pede 8 prompts documentados — incluindo 2 CoT. Você já tem todos os ingredientes: use os conceitos das Aulas 04, 05 e 06 para montar os prompts do CKP.</div>
+  </div>
+  <div class="slide-number">18 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Síntese da Aula 06</h2>
+  <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>CoT funciona porque o raciocínio escrito vira contexto</strong> — e o contexto ancora os próximos tokens. O modelo não pode contradizer o próprio raciocínio sem gerar uma sequência improvável.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>CoT zero-shot</strong> = adicionar "Pense passo a passo" ao prompt. Simples, eficaz para raciocínio geral. <strong>CoT few-shot</strong> = mostrar o raciocínio nos exemplos. Mais estruturado e auditável.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>CoT não ajuda para tudo</strong> — tarefas simples de lookup, tradução e classificação com poucas categorias não se beneficiam. Adiciona tokens e latência sem ganho.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>No lab, você escreveu o raciocínio, não o código.</strong> Isso é intencional — a habilidade de estruturar um processo de pensamento em passos é mais valiosa do que saber escrever o for loop.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Modelos "o" (o1, o3)</strong> têm CoT embutido no treinamento — eles pensam antes de responder automaticamente. É a evolução natural da técnica que você aprendeu hoje.</div>
+    </div>
+  </div>
+  <div class="slide-number">19 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Variações de CoT que você vai encontrar</h2>
+  <table class="data-table">
+    <thead><tr><th>Variação</th><th>Como funciona</th><th>Quando usar</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CoT padrão</strong></td><td>Pede raciocínio linear: passo 1 → 2 → 3 → conclusão</td><td>Maioria das tarefas de raciocínio</td></tr>
+      <tr><td><strong>Self-consistency CoT</strong></td><td>Gera múltiplos raciocínios e escolhe a resposta mais frequente (votação)</td><td>Quando precisão é crítica e custo não é problema</td></tr>
+      <tr><td><strong>Tree-of-Thought (ToT)</strong></td><td>Explora múltiplas ramificações de raciocínio em paralelo, como uma árvore</td><td>Problemas complexos com múltiplas soluções possíveis</td></tr>
+      <tr><td><strong>ReAct</strong></td><td>Raciocínio + Ação: o modelo intercala "pensar" com "fazer" (usar ferramentas)</td><td>Agentes de IA — você vai ver isso no 2º semestre</td></tr>
+      <tr><td><strong>Extended Thinking (Anthropic)</strong></td><td>CoT interno ao modelo — ele "pensa" em tokens ocultos antes de responder</td><td>Disponível no Claude 3.7+ — transparência opcional</td></tr>
+    </tbody>
+  </table>
+  <div class="callout callout-blue">
+    <div class="callout-title">💡 O que isso significa para você agora</div>
+    <div class="callout-body">Você não precisa dominar todas as variações — o CoT padrão zero-shot e few-shot já resolve a maioria dos problemas que vai encontrar no semestre. As variações avançadas (ToT, ReAct) são tópicos do 2º semestre quando construirmos agentes.</div>
+  </div>
+  <div class="slide-number">20 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Perguntas frequentes — Chain-of-Thought</h2>
+  <table class="data-table">
+    <thead><tr><th>Pergunta</th><th>Resposta</th></tr></thead>
+    <tbody>
+      <tr><td><strong>"CoT funciona com qualquer modelo?"</strong></td><td>Principalmente com modelos grandes (7B+ parâmetros). Modelos muito pequenos não têm capacidade de raciocínio suficiente para se beneficiar — o CoT pode gerar raciocínio incoerente sem melhora na resposta.</td></tr>
+      <tr><td><strong>"CoT zero-shot é sempre suficiente?"</strong></td><td>Para raciocínio geral, sim. Para tarefas com formato muito específico ou terminologia proprietária, CoT few-shot é mais confiável — você define o framework de raciocínio nos exemplos.</td></tr>
+      <tr><td><strong>"O raciocínio que o modelo gera é confiável?"</strong></td><td>Mais do que a resposta direta, mas ainda não é infalível. O modelo pode gerar raciocínio plausível mas incorreto. Sempre verifique conclusões críticas externamente — CoT reduz erros mas não os elimina.</td></tr>
+      <tr><td><strong>"CoT e few-shot podem ser usados juntos?"</strong></td><td>Sim, e é o mais poderoso: CoT few-shot = exemplos com raciocínio completo. Você viu isso hoje no notebook aluno — exemplos com passos de raciocínio explícitos.</td></tr>
+      <tr><td><strong>"Por que o o1/o3 é melhor em matemática?"</strong></td><td>Porque foi treinado com reinforcement learning para gerar raciocínio interno (scratchpad) antes de responder. É CoT embutido no peso do modelo, não só no prompt.</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-number">21 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>CKP02 — próxima entrega · Bibliotéca de Prompts</h2>
+  <p>Na próxima aula (07) o CKP02 encerra. Veja o que é pedido e use o que aprendeu até aqui:</p>
+  <div style="background:rgba(124,96,198,.06);border:2px solid rgba(124,96,198,.25);border-radius:14px;padding:24px;margin:16px 0">
+    <div style="font-size:11px;font-weight:700;color:var(--fiap-purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">🏁 CKP02 — Biblioteca de Prompts · Grupo 3–4</div>
+    <div style="font-size:14px;color:var(--fiap-text);line-height:1.7;margin-bottom:16px">8 prompts documentados para um domínio escolhido pelo grupo. Para cada prompt: objetivo, versão inicial, 1 iteração de melhoria, versão final e output real colado no documento.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-blue)">2 prompts Zero-shot (A04)</strong><br>
+        <span style="color:var(--fiap-muted)">Com os 4 componentes — instrução, contexto, input, formato</span>
+      </div>
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-green)">2 prompts Few-shot (A05)</strong><br>
+        <span style="color:var(--fiap-muted)">Com exemplos representativos — 1 por categoria</span>
+      </div>
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-purple)">2 prompts CoT (A06)</strong><br>
+        <span style="color:var(--fiap-muted)">Zero-shot ("pense passo a passo") ou few-shot com raciocínio</span>
+      </div>
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-orange)">2 prompts Role (A07)</strong><br>
+        <span style="color:var(--fiap-muted)">Após a próxima aula — system prompt com persona</span>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-orange">
+    <div class="callout-title">⏱️ Estimativa de tempo</div>
+    <div class="callout-body">3–4 horas para grupos de 4 pessoas. Não precisa de código Python — pode usar a interface do Claude ou Gemini free para testar os prompts e colar o output no documento.</div>
+  </div>
+  <div class="slide-number">22 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que vem na Aula 07 — Role prompting e parâmetros</h2>
+  <div class="two-col">
+    <div>
+      <div class="callout callout-blue">
+        <div class="callout-title">👤 Role prompting</div>
+        <div class="callout-body">Como a persona do modelo muda completamente o resultado — não só o tom. O mesmo assistente como "especialista técnico", "professor paciente" e "jornalista crítico" vai responder a mesma pergunta de formas radicalmente diferentes.<br><br>
+        Você vai combinar Role + CoT + Few-shot em um único prompt e ver o poder da combinação.</div>
+      </div>
+    </div>
+    <div>
+      <div class="callout callout-purple">
+        <div class="callout-title">🎛️ Parâmetros — revisão aplicada</div>
+        <div class="callout-body">Temperature, top-p e max_tokens revisitados — mas agora com o código que você já conhece. Você vai ver na prática como cada parâmetro muda o comportamento do modelo para tarefas específicas.<br><br>
+        Também fecha o CKP02 — a Aula 07 é a última técnica que você precisa antes de entregar.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:8px">
+    <div class="callout-title">🎯 Para trazer na Aula 07</div>
+    <div class="callout-body">Pense em 3 personas diferentes que fariam sentido para o domínio do CKP02 do seu grupo. Na Aula 07 você vai testar as 3 e documentar as diferenças — e isso vai direto para o CKP02.</div>
+  </div>
+  <div class="slide-number">23 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">04</div>
+  <div class="section-title">Demo ao vivo</div>
+  <div class="section-desc">Mesmo problema testado sem CoT, com CoT zero-shot e com CoT few-shot. O professor executa — você compara os resultados.</div>
+  <div class="slide-number">24 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>🚀 Demo Prática — Comparativo ao vivo com 3 variantes</h2>
+  <p>O professor executa este código. <strong>Você anota a resposta de cada variante e analisa com a turma.</strong></p>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">Aula_06_Demo.ipynb</span></div>
+    <div class="code-body"><pre><span class="cm"># Setup (igual às aulas anteriores)</span>
+<span class="tx">!</span><span class="fn">pip install</span> <span class="st">-q ollama</span>
+<span class="kw">import</span> <span class="nb">ollama</span>
+<span class="kw">from</span> <span class="nb">google.colab</span> <span class="kw">import</span> <span class="nb">userdata</span>
+<span class="va">client</span> <span class="op">=</span> <span class="nb">ollama</span><span class="op">.</span><span class="fn">Client</span><span class="op">(</span>
+    <span class="va">host</span><span class="op">=</span><span class="st">"https://api.ollama.com"</span><span class="op">,</span>
+    <span class="va">headers</span><span class="op">={</span><span class="st">"Authorization"</span><span class="op">:</span> <span class="st">f"Bearer {userdata.get('OLLAMA_API_KEY')}"</span><span class="op">}</span>
+<span class="op">)</span>
+
+<span class="cm"># Problema de lógica que o modelo frequentemente erra sem CoT</span>
+<span class="va">problema</span> <span class="op">=</span> <span class="st">"""Um fazendeiro tem 17 ovelhas. Todas menos 9 morrem.
+Quantas ovelhas o fazendeiro tem agora?"""</span>
+
+<span class="va">variantes</span> <span class="op">= [</span>
+    <span class="op">(</span><span class="st">"SEM CoT"</span><span class="op">,</span>
+     <span class="st">f"Responda diretamente: {problema}"</span><span class="op">),</span>
+
+    <span class="op">(</span><span class="st">"CoT ZERO-SHOT"</span><span class="op">,</span>
+     <span class="st">f"Resolva o problema. Pense passo a passo antes de responder.\n\n{problema}"</span><span class="op">),</span>
+
+    <span class="op">(</span><span class="st">"CoT FEW-SHOT"</span><span class="op">,</span>
+     <span class="st">"""Problema: "Tenho 10 maçãs e como 3. Quantas restam?"
+Raciocínio: Inicio com 10. Removo 3. 10 - 3 = 7.
+Resposta: 7
+
+Problema: "Havia 5 carros, 2 saíram. Quantos ficaram?"
+Raciocínio: Inicio com 5. Removo 2. 5 - 2 = 3.
+Resposta: 3
+
+"""</span> <span class="op">+</span> <span class="st">f"Problema: {problema}\nRaciocínio:"</span><span class="op">),</span>
+<span class="op">]</span>
+
+<span class="kw">for</span> <span class="va">nome</span><span class="op">,</span> <span class="va">prompt</span> <span class="kw">in</span> <span class="va">variantes</span><span class="op">:</span>
+    <span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+        <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+        <span class="va">messages</span><span class="op">=[{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="va">prompt</span><span class="op">}]</span>
+    <span class="op">)</span>
+    <span class="nb">print</span><span class="op">(</span><span class="st">f"\n{'='*40}\n{nome}:\n{resp['message']['content']}"</span><span class="op">)</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">25 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <div class="exercise">
+    <div class="exercise-header">
+      <div class="exercise-icon">🧠</div>
+      <div>
+        <div class="exercise-label">Lab — Aula 06</div>
+        <div class="exercise-title">Escrever o raciocínio dos exemplos
+          <span class="difficulty"><span class="star">★</span><span class="star empty">★</span><span class="star empty">★</span></span>
+        </div>
+      </div>
+    </div>
+    <p style="color:var(--fiap-muted);font-size:14px;margin-bottom:16px"><strong>Individual ou dupla · 25 minutos · Foco nos passos de raciocínio, não no código</strong></p>
+    <ol class="exercise-steps">
+      <li><strong>Complete as 6 lacunas</strong> nos passos de raciocínio dos 2 exemplos. Pense como um arquiteto de software analisaria cada situação — quais fatores ele consideraria?</li>
+      <li><strong>Execute o notebook.</strong> O modelo vai gerar o raciocínio para a rede social seguindo o formato que você ensinou nos exemplos.</li>
+      <li><strong>Avalie o resultado:</strong> o raciocínio do modelo faz sentido? Chegou à conclusão certa (para rede social: banco de grafos ou relacional com boas práticas)? Se não, o que estava errado nos seus exemplos?</li>
+      <li><strong>Desafio — CoT zero-shot:</strong> adicione uma segunda célula que testa a mesma situação sem os exemplos, só com "Pense passo a passo." Compare os dois resultados.</li>
+    </ol>
+    <div style="padding:14px 16px;background:rgba(124,96,198,.06);border-radius:8px;border-left:3px solid var(--fiap-purple);margin:14px 0">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-purple);margin-bottom:6px">💡 O que escrever nos passos</div>
+      <div style="font-size:13px;color:var(--fiap-muted);line-height:1.7">
+        Passo 1 (e-commerce): "Dados são estruturados — produtos têm campos fixos (nome, preço, estoque)."<br>
+        Passo 2 (e-commerce): "Há relacionamentos: pedido → produto → cliente. JOINs serão necessários."<br>
+        Passo 3 (e-commerce): "Escala é previsível. Consistência ACID é importante para pedidos."<br>
+        Conclusão: "Banco relacional (PostgreSQL ou MySQL)."
+      </div>
+    </div>
+    <div class="exercise-hint">
+      💡 <strong>O objetivo real do exercício:</strong> você está aprendendo a <em>pensar como um analista</em> ao construir os passos. O modelo vai aprender com o framework que você construiu — se seus passos forem bons, o raciocínio do modelo para o novo caso também será bom.
+    </div>
+  </div>
+  <div class="slide-number">26 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Referências</h2>
+  <div class="ref-list">
+    <div class="ref-item"><span class="ref-tag ref-tag-paper">Paper</span><div class="ref-text"><strong>Wei, J. et al. (Google)</strong> — "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models." NeurIPS, 2022. O paper original que demonstrou o poder do CoT. <a href="https://arxiv.org/abs/2201.11903" style="color:var(--fiap-blue)">arxiv.org/abs/2201.11903</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-paper">Paper</span><div class="ref-text"><strong>Kojima, T. et al.</strong> — "Large Language Models are Zero-Shot Reasoners." NeurIPS, 2022. Demonstrou que "Let's think step by step" melhora raciocínio sem exemplos. <a href="https://arxiv.org/abs/2205.11916" style="color:var(--fiap-blue)">arxiv.org/abs/2205.11916</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-book">Livro</span><div class="ref-text"><strong>Russell, S.; Norvig, P.</strong> — Inteligência Artificial. 3ª ed. Pearson, 2016. Cap. 7 (Raciocínio lógico) — fundamento teórico para encadeamento de inferências.</div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>DAIR.AI</strong> — Chain-of-Thought Prompting. <a href="https://www.promptingguide.ai/techniques/cot" style="color:var(--fiap-blue)">promptingguide.ai/techniques/cot</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>Anthropic</strong> — Let Claude think (extended thinking). <a href="https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking" style="color:var(--fiap-blue)">docs.anthropic.com</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>OpenAI</strong> — Reasoning models (o1, o3) overview. <a href="https://platform.openai.com/docs/guides/reasoning" style="color:var(--fiap-blue)">platform.openai.com/docs/guides/reasoning</a></div></div>
+  </div>
+  <div class="slide-number">27 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-closing">
+  <svg width="120" height="30" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="font-size:32px;font-weight:800;color:var(--fiap-white);margin:24px 0 8px">Aula 06 concluída 🔗</div>
+  <div style="font-size:16px;color:var(--fiap-muted);margin-bottom:12px;max-width:540px">Você aprendeu a fazer o modelo pensar em voz alta — e viu que o processo visível é mais confiável do que o atalho direto. Na próxima aula, a última técnica antes do CKP02.</div>
+  <div class="next-class">
+    <div class="next-label">Próxima Aula — Aula 07 · Módulo 2</div>
+    <div class="next-title">Role prompting e parâmetros do modelo</div>
+    <div class="next-desc">System prompt vs. user prompt. Personas que mudam o comportamento do assistente. Temperature e top-p aplicados ao código. Fecha o CKP02.</div>
+  </div>
+  <div style="margin-top:24px;padding:14px 24px;background:rgba(124,96,198,.08);border:1px solid rgba(124,96,198,.2);border-radius:10px;max-width:540px;text-align:left">
+    <div style="font-size:12px;font-weight:700;color:var(--fiap-purple);margin-bottom:4px">🏁 CKP02 — Entrega junto à Aula 07</div>
+    <div style="font-size:13px;color:var(--fiap-muted)">8 prompts (2 zero-shot, 2 few-shot, 2 CoT, 2 role) · 3–4h por grupo · sem código obrigatório.</div>
+  </div>
+  <div style="margin-top:24px;font-size:12px;color:var(--fiap-muted)">Copyright © 2026 Prof. Jorge Luiz Gomes · profjorge.gomes@fiap.com.br · FIAP · Todos os direitos reservados.</div>
+  <div class="slide-number">28 / 28</div>
+</div>
+
+
+
+</div>
+<script>
+/* ===== FIAPCHART-2026 ===== */
+(function(){
+  var PAL=['#ED145B','#3D9CCC','#29AF8C','#7C60C6','#D58C2E','#C9492C','#4e4e68'];
+  var tip=document.createElement('div');tip.className='fq-tip';document.body.appendChild(tip);
+  function showTip(e,html){tip.innerHTML=html;tip.classList.add('on');moveTip(e);}
+  function moveTip(e){
+    var x=e.clientX+14,y=e.clientY+14;
+    if(x+300>window.innerWidth)x=e.clientX-tip.offsetWidth-14;
+    if(y+tip.offsetHeight+10>window.innerHeight)y=e.clientY-tip.offsetHeight-14;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  function hideTip(){tip.classList.remove('on');}
+  function bind(el,html){
+    el.addEventListener('mouseenter',function(e){showTip(e,html);});
+    el.addEventListener('mousemove',moveTip);
+    el.addEventListener('mouseleave',hideTip);
+    el.addEventListener('click',function(e){showTip(e,html);});
+  }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function ns(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+  function at(el,o){for(var k in o)el.setAttribute(k,o[k]);return el;}
+  function txt(x,y,s,o){var t=at(ns('text'),o||{});t.setAttribute('x',x);t.setAttribute('y',y);
+    t.setAttribute('font-family','Inter,sans-serif');t.textContent=s;return t;}
+  function split(s){return (s||'').split('|').map(function(v){return v.trim();});}
+  function nums(s){return split(s).map(parseFloat);}
+
+  /* ---------- grafico de barras (horizontal ou vertical) ---------- */
+  function bar(box){
+    var labels=split(box.dataset.labels),vals=nums(box.dataset.values),
+        notes=box.dataset.notes?split(box.dataset.notes):[],
+        unit=box.dataset.unit||'',horiz=box.dataset.orient!=='v',
+        max=Math.max.apply(null,vals)*1.02,
+        svg=ns('svg'),W=760,rowH=horiz?34:0,H=horiz?labels.length*rowH+16:250;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    if(horiz){
+      var lw=Math.min(230,10+Math.max.apply(null,labels.map(function(l){return l.length*6.6;})));
+      labels.forEach(function(lb,i){
+        var y=i*rowH+8,w=Math.max(3,(vals[i]/max)*(W-lw-92)),c=PAL[i%PAL.length];
+        svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+        var r=at(ns('rect'),{x:lw,y:y+5,width:w,height:19,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(lw+w+9,y+19,vals[i]+unit,{'font-size':'11.5','font-weight':'700',fill:c}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }else{
+      var bw=(W-60)/labels.length,base=205;
+      svg.appendChild(at(ns('line'),{x1:44,y1:base,x2:W-6,y2:base,stroke:'#e2e4ec','stroke-width':1.5}));
+      labels.forEach(function(lb,i){
+        var h=Math.max(2,(vals[i]/max)*168),x=52+i*bw,c=PAL[i%PAL.length];
+        var r=at(ns('rect'),{x:x,y:base-h,width:bw*.6,height:h,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(x+bw*.3,base-h-7,vals[i]+unit,{'font-size':'11','font-weight':'700',fill:c,'text-anchor':'middle'}));
+        svg.appendChild(txt(x+bw*.3,base+17,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }
+    return svg;
+  }
+
+  /* ---------- grafico de linhas multi-serie ---------- */
+  function line(box){
+    var xs=split(box.dataset.x),
+        series=JSON.parse(box.dataset.series),
+        unit=box.dataset.unit||'',logY=box.dataset.scale==='log',
+        W=760,H=260,L=52,R=14,T=14,B=38,
+        all=series.reduce(function(a,s){return a.concat(s.values);},[]),
+        mx=Math.max.apply(null,all),mn=logY?Math.max(0.0001,Math.min.apply(null,all)):0,
+        svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    function px(i){return L+i*((W-L-R)/Math.max(1,xs.length-1));}
+    function py(v){
+      var f=logY?(Math.log(Math.max(v,mn))-Math.log(mn))/(Math.log(mx)-Math.log(mn)):v/mx;
+      return H-B-f*(H-B-T);
+    }
+    for(var g=0;g<=4;g++){
+      var y=T+g*((H-B-T)/4);
+      svg.appendChild(at(ns('line'),{x1:L,y1:y,x2:W-R,y2:y,stroke:'#eef0f5','stroke-width':1}));
+    }
+    xs.forEach(function(lb,i){svg.appendChild(txt(px(i),H-B+19,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));});
+    series.forEach(function(s,k){
+      var c=s.color||PAL[k%PAL.length],d='';
+      s.values.forEach(function(v,i){d+=(i?' L ':'M ')+px(i).toFixed(1)+' '+py(v).toFixed(1);});
+      var path=at(ns('path'),{d:d,fill:'none',stroke:c,'stroke-width':2.4,'stroke-linejoin':'round','data-key':s.name});
+      svg.appendChild(path);
+      s.values.forEach(function(v,i){
+        var dot=at(ns('circle'),{cx:px(i),cy:py(v),r:5,fill:c,class:'fq-dot','data-key':s.name});
+        svg.appendChild(dot);
+        bind(dot,'<b>'+esc(s.name)+'</b>'+esc(xs[i])+': '+esc(v+unit)+(s.notes&&s.notes[i]?'<br>'+esc(s.notes[i]):''));
+      });
+    });
+    return svg;
+  }
+
+  /* ---------- barra empilhada 100% ---------- */
+  function stack(box){
+    var segs=JSON.parse(box.dataset.segments),W=760,H=64,
+        tot=segs.reduce(function(a,s){return a+s.value;},0),x=0,svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    segs.forEach(function(s,k){
+      var w=(s.value/tot)*W,c=s.color||PAL[k%PAL.length];
+      var r=at(ns('rect'),{x:x,y:8,width:Math.max(1,w-2),height:30,rx:4,fill:c,class:'fq-seg'});
+      svg.appendChild(r);
+      if(w>54)svg.appendChild(txt(x+w/2,28,Math.round(s.value/tot*100)+'%',
+        {'font-size':'12','font-weight':'800',fill:'#fff','text-anchor':'middle'}));
+      svg.appendChild(txt(x+2,54,s.name,{'font-size':'10.5',fill:'#4e4e68'}));
+      bind(r,'<b>'+esc(s.name)+'</b>'+esc(s.value)+' ('+Math.round(s.value/tot*100)+'%)'+(s.note?'<br>'+esc(s.note):''));
+      x+=w;
+    });
+    return svg;
+  }
+
+  /* ---------- softmax com slider de temperatura ---------- */
+  function soft(box){
+    var labels=split(box.dataset.labels),logits=nums(box.dataset.logits),
+        T=parseFloat(box.dataset.temp||'1'),W=760,rowH=30,H=labels.length*rowH+10,
+        svg=ns('svg'),bars=[],pcts=[],lw=190;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'distribuição de probabilidade'});
+    labels.forEach(function(lb,i){
+      var y=i*rowH+6,c=i===0?'#ED145B':(i<3?'#7C60C6':'#94a3b8');
+      svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+      var r=at(ns('rect'),{x:lw,y:y+5,width:1,height:17,rx:4,fill:c,class:'fq-bar'});
+      svg.appendChild(r);bars.push(r);
+      var p=txt(lw+8,y+18,'',{'font-size':'11.5','font-weight':'700',fill:c});
+      svg.appendChild(p);pcts.push(p);
+    });
+    function draw(t){
+      var e=logits.map(function(l){return Math.exp(l/t);}),
+          s=e.reduce(function(a,b){return a+b;},0),max=Math.max.apply(null,e)/s;
+      e.forEach(function(v,i){
+        var pr=v/s,w=Math.max(2,(pr/max)*(W-lw-72));
+        bars[i].setAttribute('width',w);
+        pcts[i].setAttribute('x',lw+w+9);
+        pcts[i].textContent=(pr*100).toFixed(1)+'%';
+        bars[i].__tip='<b>'+esc(labels[i])+'</b>logit '+logits[i].toFixed(1)+
+          ' · probabilidade '+(pr*100).toFixed(1)+'% com temperatura '+t.toFixed(2);
+      });
+    }
+    bars.forEach(function(r){
+      r.addEventListener('mouseenter',function(e){showTip(e,r.__tip);});
+      r.addEventListener('mousemove',moveTip);
+      r.addEventListener('mouseleave',hideTip);
+      r.addEventListener('click',function(e){showTip(e,r.__tip);});
+    });
+    var ctrl=document.createElement('div');ctrl.className='ctrl';
+    ctrl.innerHTML='<label>Temperatura</label>'+
+      '<input type="range" min="0.05" max="2" step="0.05" value="'+T+'"><output>'+T.toFixed(2)+'</output>';
+    var rg=ctrl.querySelector('input'),ou=ctrl.querySelector('output');
+    rg.addEventListener('input',function(){var v=parseFloat(rg.value);ou.textContent=v.toFixed(2);draw(v);});
+    box.appendChild(ctrl);
+    setTimeout(function(){draw(T);},0);
+    return svg;
+  }
+
+  var KIND={bar:bar,line:line,stack:stack,soft:soft};
+
+  document.querySelectorAll('.chart[data-chart]').forEach(function(box){
+    var fn=KIND[box.dataset.chart];if(!fn)return;
+    var svg;try{svg=fn(box);}catch(e){return;}
+    box.insertBefore(svg,box.querySelector('.chart-legend,.ctrl'));
+    /* legenda clicavel liga/desliga serie */
+    box.querySelectorAll('.chart-key[data-key]').forEach(function(key){
+      key.addEventListener('click',function(){
+        key.classList.toggle('off');
+        var off=key.classList.contains('off');
+        svg.querySelectorAll('[data-key="'+key.dataset.key+'"]').forEach(function(el){
+          el.style.display=off?'none':'';
+        });
+      });
+    });
+    if(!box.querySelector('.chart-hint')){
+      var h=document.createElement('div');h.className='chart-hint';
+      h.textContent='Passe o mouse (ou toque) sobre os elementos do gráfico para ver os detalhes.';
+      box.appendChild(h);
+    }
+  });
+
+  /* ---------- hotspots em diagramas SVG ---------- */
+  document.querySelectorAll('.diagram').forEach(function(dg){
+    var spots=dg.querySelectorAll('[data-info]');if(!spots.length)return;
+    var panel=dg.querySelector('.diagram-info');
+    if(!panel){panel=document.createElement('div');panel.className='diagram-info';
+      panel.innerHTML='<b>Diagrama interativo</b>Clique em qualquer bloco para ver a explicação detalhada.';
+      dg.appendChild(panel);}
+    var base=panel.innerHTML;
+    spots.forEach(function(s){
+      var title=s.getAttribute('data-title')||'Detalhe';
+      function open(){
+        spots.forEach(function(o){o.style.strokeWidth='';});
+        s.style.strokeWidth='4';
+        panel.innerHTML='<b>'+esc(title)+'</b>'+s.getAttribute('data-info');
+      }
+      s.addEventListener('click',open);
+      s.addEventListener('mouseenter',open);
+    });
+    dg.addEventListener('mouseleave',function(){
+      spots.forEach(function(o){o.style.strokeWidth='';});panel.innerHTML=base;
+    });
+  });
+
+  /* ---------- abas ---------- */
+  document.querySelectorAll('[data-tabs]').forEach(function(group){
+    var tabs=group.querySelectorAll('.tab'),panels=group.querySelectorAll('.tab-panel');
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){
+        tabs.forEach(function(o){o.classList.remove('on');});
+        panels.forEach(function(o){o.classList.remove('on');});
+        t.classList.add('on');if(panels[i])panels[i].classList.add('on');
+      });
+    });
+  });
+})();
+</script>
+
+
+
+</body>
+</html>

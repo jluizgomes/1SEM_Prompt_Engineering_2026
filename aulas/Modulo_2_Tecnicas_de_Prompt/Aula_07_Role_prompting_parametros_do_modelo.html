@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 07 — Role prompting e parâmetros do modelo</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{--fiap-pink:#ED145B;--fiap-dark:#f5f6fa;--fiap-surface:#ffffff;--fiap-surface2:#f0f1f5;--fiap-border:#e2e4ec;--fiap-text:#1a1b2f;--fiap-muted:#4e4e68;--fiap-white:#1a1b2f;--fiap-green:#29AF8C;--fiap-blue:#3D9CCC;--fiap-purple:#7C60C6;--fiap-orange:#D58C2E;--fiap-red:#C9492C;--code-bg:#1e293b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',-apple-system,sans-serif;background:var(--fiap-dark);color:var(--fiap-text);line-height:1.7;font-size:15px}
+  .slide{width:100%;min-height:100vh;padding:60px 80px;position:relative;border-bottom:1px solid var(--fiap-border);display:flex;flex-direction:column;overflow:hidden}
+  .slide::before{content:'';position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(237,20,91,.04) 0%,transparent 70%);pointer-events:none}
+  .slide-number{position:absolute;bottom:30px;right:40px;font-size:12px;color:var(--fiap-muted);font-weight:500;letter-spacing:1px}
+  .slide-footer{position:absolute;bottom:30px;left:80px;font-size:11px;color:rgba(78,78,104,.6)}
+  .slide-cover{background:linear-gradient(135deg,#f5f6fa 0%,#ecfdf5 50%,#f3e8ff 100%);justify-content:center;align-items:center;text-align:center;padding:60px}
+  .cover-course{font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:20px}
+  .cover-title{font-size:44px;font-weight:800;color:var(--fiap-white);line-height:1.15;margin-bottom:16px;max-width:800px}
+  .cover-subtitle{font-size:18px;color:var(--fiap-muted);margin-bottom:40px}
+  .cover-meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+  .cover-meta-item{background:rgba(237,20,91,.1);border:1px solid rgba(237,20,91,.25);padding:8px 18px;border-radius:8px;font-size:13px;color:var(--fiap-text);font-weight:500}
+  .slide-section{background:linear-gradient(135deg,#f5f6fa 0%,#ecfdf5 100%);justify-content:center;align-items:flex-start;padding:80px 100px}
+  .section-number{font-size:72px;font-weight:900;color:var(--fiap-pink);opacity:.25;line-height:1;margin-bottom:10px}
+  .section-title{font-size:38px;font-weight:800;color:var(--fiap-white);line-height:1.2;margin-bottom:16px}
+  .section-desc{font-size:16px;color:var(--fiap-muted);max-width:600px}
+  .slide-content{background:var(--fiap-dark);padding-top:50px}
+  .slide-content h2{font-size:28px;font-weight:800;color:var(--fiap-white);margin-bottom:32px;padding-bottom:12px;border-bottom:2px solid var(--fiap-pink);display:inline-block}
+  .slide-content h3{font-size:20px;font-weight:700;color:var(--fiap-pink);margin:28px 0 16px}
+  .slide-content p{color:var(--fiap-text);margin-bottom:16px;max-width:950px}
+  .slide-content strong{color:var(--fiap-white)}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin:24px 0}
+  .card{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:24px}
+  .card-icon{font-size:28px;margin-bottom:12px}
+  .card-title{font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px}
+  .card-body{font-size:13px;color:var(--fiap-muted);line-height:1.6}
+  .data-table{width:100%;border-collapse:collapse;margin:20px 0;background:var(--fiap-surface);border-radius:12px;overflow:hidden;border:1px solid var(--fiap-border)}
+  .data-table th{background:var(--fiap-surface2);padding:12px 18px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-pink);border-bottom:1px solid var(--fiap-border)}
+  .data-table td{padding:12px 18px;font-size:13px;color:var(--fiap-text);border-bottom:1px solid rgba(0,0,0,.06);vertical-align:top}
+  .data-table tr:last-child td{border-bottom:none}
+  .callout{background:var(--fiap-surface);border-left:4px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0}
+  .callout-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--fiap-pink);margin-bottom:8px}
+  .callout-body{font-size:14px;color:var(--fiap-muted);line-height:1.6}
+  .callout-green{border-left-color:var(--fiap-green)}.callout-green .callout-title{color:var(--fiap-green)}
+  .callout-blue{border-left-color:var(--fiap-blue)}.callout-blue .callout-title{color:var(--fiap-blue)}
+  .callout-purple{border-left-color:var(--fiap-purple)}.callout-purple .callout-title{color:var(--fiap-purple)}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .badge-green{background:rgba(41,175,140,.12);color:var(--fiap-green)}
+  .badge-blue{background:rgba(61,156,204,.12);color:var(--fiap-blue)}
+  .badge-purple{background:rgba(124,96,198,.12);color:var(--fiap-purple)}
+  .badge-orange{background:rgba(213,140,46,.12);color:var(--fiap-orange)}
+  .exercise{background:linear-gradient(135deg,rgba(41,175,140,.06) 0%,rgba(61,156,204,.06) 100%);border:1px solid rgba(41,175,140,.2);border-radius:14px;padding:28px;margin:28px 0}
+  .exercise-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .exercise-icon{width:40px;height:40px;background:rgba(41,175,140,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .exercise-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-green)}
+  .exercise-title{font-size:17px;font-weight:700;color:var(--fiap-white)}
+  .exercise-steps{margin:16px 0;padding-left:20px}
+  .exercise-steps li{color:var(--fiap-text);font-size:14px;margin-bottom:8px;line-height:1.6}
+  .exercise-hint{background:rgba(61,156,204,.08);border:1px solid rgba(61,156,204,.2);border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:var(--fiap-blue)}
+  .difficulty .star{color:var(--fiap-orange);font-size:14px}
+  .difficulty .star.empty{opacity:.25}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:20px 0}
+  .agenda-item{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;margin-bottom:10px}
+  .agenda-num{width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--fiap-pink);flex-shrink:0}
+  .agenda-text{font-size:14px;font-weight:600;color:var(--fiap-white);flex:1}
+  .agenda-time{font-size:12px;font-weight:600;color:var(--fiap-muted);background:var(--fiap-surface2);padding:4px 10px;border-radius:6px}
+  .slide-closing{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 50%,#ecfdf5 100%);justify-content:center;align-items:center;text-align:center}
+  .next-class{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:14px;padding:32px 48px;margin-top:40px;text-align:left;max-width:600px}
+  .next-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:8px}
+  .next-title{font-size:18px;font-weight:700;color:var(--fiap-white);margin-bottom:6px}
+  .next-desc{font-size:13px;color:var(--fiap-muted)}
+  .ref-list{margin:16px 0}
+  .ref-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .ref-tag{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;margin-top:2px;flex-shrink:0}
+  .ref-tag-book{background:rgba(108,99,255,.15);color:#a89cff}
+  .ref-tag-doc{background:rgba(255,209,102,.12);color:#ffd166}
+  .ref-tag-paper{background:rgba(255,107,107,.12);color:#ff9a9a}
+  .ref-text{font-size:12px;color:var(--fiap-muted);line-height:1.5}
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;margin:16px 0;overflow:visible;font-family:'JetBrains Mono',monospace}
+  .code-header{background:#0f172a;padding:10px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155}
+  .code-dot{width:10px;height:10px;border-radius:50%}
+  .code-dot.red{background:#ff5f57}.code-dot.yellow{background:#febc2e}.code-dot.green{background:#28c840}
+  .code-filename{font-size:12px;color:#94a3b8;margin-left:8px}
+  .code-body{padding:20px;font-size:13px;line-height:1.9}
+  .code-body pre{margin:0;white-space:pre;overflow-x:auto}
+  .kw{color:#c678dd}.fn{color:#61afef}.st{color:#98c379}.cm{color:#94a3b8;font-style:italic}
+  .nb{color:#e5c07b}.num{color:#d19a66}.op{color:#56b6c2}.tx{color:#abb2bf}.va{color:#e06c75}
+  .gap{background:rgba(237,20,91,.15);border:1px dashed rgba(237,20,91,.5);border-radius:4px;padding:0 6px;color:#ED145B;font-style:italic;font-family:'JetBrains Mono',monospace;font-size:12px}
+  /* persona compare */
+  .persona-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0}
+  .persona-card{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden}
+  .persona-header{padding:10px 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--fiap-border)}
+  .persona-system{padding:12px 14px;font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted);line-height:1.7;border-bottom:1px solid var(--fiap-border);min-height:90px}
+  .persona-output{padding:10px 14px;font-size:12px;color:var(--fiap-muted);line-height:1.6;min-height:80px}
+  /* temp scale */
+  .temp-scale{display:flex;margin:16px 0;border-radius:10px;overflow:hidden;border:1px solid var(--fiap-border);height:52px}
+  .temp-zone{flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:2px}
+  /* CKP */
+  .ckp-box{background:linear-gradient(135deg,rgba(3,105,161,.06) 0%,rgba(8,145,178,.04) 100%);border:2px solid rgba(3,105,161,.25);border-radius:16px;padding:28px;margin:20px 0}
+  .ckp-header{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .ckp-badge{background:var(--fiap-blue);color:#fff;font-size:12px;font-weight:800;padding:6px 14px;border-radius:8px}
+  .ckp-title{font-size:20px;font-weight:800;color:var(--fiap-white)}
+  .ckp-rubric{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden;margin-top:16px}
+  .ckp-rubric-header{background:var(--fiap-surface2);padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-blue)}
+  .ckp-rubric-row{display:grid;grid-template-columns:1fr 80px;padding:10px 16px;border-bottom:1px solid rgba(0,0,0,.05);font-size:13px;gap:12px}
+  .ckp-rubric-row:last-child{border-bottom:none}
+  .ckp-peso{font-weight:700;color:var(--fiap-blue);text-align:right}
+  @media print{.slide{page-break-after:always;min-height:auto;padding:30px 40px}}
+/* ===== SCROLL-SUAVE-2026 ===== */
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{scroll-behavior:smooth}
+  .slide{scroll-margin-top:0}
+  @media (prefers-reduced-motion:reduce){html,body{scroll-behavior:auto}}
+
+/* ===== ADDON-FIAP-2026 ===== */
+  .glossary{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin:20px 0}
+  .gl-item{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:14px 18px}
+  .gl-item.gl-blue{border-left-color:var(--fiap-blue)}
+  .gl-item.gl-green{border-left-color:var(--fiap-green)}
+  .gl-item.gl-purple{border-left-color:var(--fiap-purple)}
+  .gl-item.gl-orange{border-left-color:var(--fiap-orange)}
+  .gl-term{font-size:14px;font-weight:800;color:var(--fiap-white);margin-bottom:4px}
+  .gl-pron{font-size:11px;font-weight:500;color:var(--fiap-muted);font-style:italic;margin-left:6px}
+  .gl-def{font-size:12.5px;color:var(--fiap-muted);line-height:1.55}
+  .gl-analogy{font-size:12px;color:var(--fiap-blue);margin-top:6px;padding-top:6px;border-top:1px dashed var(--fiap-border)}
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;overflow:visible;margin:18px 0}
+  .code-header{background:#0f172a;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #334155;display:flex;justify-content:space-between;gap:12px}
+  .code-body{padding:16px 18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.65;color:#e2e8f0;overflow-x:auto;white-space:pre}
+  .code-body .kw{color:#c678dd}.code-body .fn{color:#61afef}.code-body .st{color:#98c379}
+  .code-body .cm{color:#94a3b8;font-style:italic}.code-body .nb{color:#e5c07b}
+  .code-body .num{color:#d19a66}.code-body .op{color:#56b6c2}.code-body .tx{color:#e2e8f0}
+  .diagram{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .diagram-cap{font-size:11.5px;color:var(--fiap-muted);text-align:center;margin-top:10px;font-style:italic}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:20px 0}
+  .metric{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;padding:16px;text-align:center}
+  .metric-val{font-size:26px;font-weight:900;color:var(--fiap-pink);line-height:1}
+  .metric-lbl{font-size:11px;color:var(--fiap-muted);margin-top:6px;line-height:1.4}
+  .prompt-box{border-radius:10px;padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+  .prompt-good{background:rgba(41,175,140,.07);border:1px solid rgba(41,175,140,.3);color:var(--fiap-text)}
+  .prompt-bad{background:rgba(201,73,44,.07);border:1px solid rgba(201,73,44,.3);color:var(--fiap-text)}
+  .prompt-label{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-family:'Inter',sans-serif}
+  .prompt-good .prompt-label{color:var(--fiap-green)}.prompt-bad .prompt-label{color:var(--fiap-red)}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:20px 0}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .callout-red{border-left-color:var(--fiap-red)}.callout-red .callout-title{color:var(--fiap-red)}
+  .ref-tag-law{background:rgba(41,175,140,.15);color:#1f8f72}
+  .checklist{list-style:none;margin:16px 0}
+  .checklist li{padding:7px 0 7px 28px;position:relative;font-size:13.5px;color:var(--fiap-text)}
+  .checklist li::before{content:'\2713';position:absolute;left:0;color:var(--fiap-green);font-weight:800}
+  .pause{background:rgba(213,140,46,.08);border:1px dashed rgba(213,140,46,.45);border-radius:10px;padding:12px 18px;margin:18px 0;font-size:13px;color:#a8701f;font-weight:600}
+  .kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .kpi{background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--fiap-text)}
+  .data-table td code,.gl-def code,.callout-body code,.slide-content p code{font-family:'JetBrains Mono',monospace;font-size:.9em;background:var(--fiap-surface2);padding:1px 5px;border-radius:4px;color:#b3186a}
+  /* ---- graficos interativos ---- */
+  .chart{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:18px 20px 14px;margin:20px 0}
+  .chart-title{font-size:13px;font-weight:800;color:var(--fiap-white);margin-bottom:2px}
+  .chart-sub{font-size:11.5px;color:var(--fiap-muted);margin-bottom:12px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chart-key{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--fiap-muted);background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:20px;padding:4px 11px;cursor:pointer;user-select:none;transition:opacity .15s}
+  .chart-key.off{opacity:.35}
+  .chart-key i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .chart-hint{font-size:11px;color:var(--fiap-muted);font-style:italic;margin-top:10px;text-align:center}
+  .fq-bar,.fq-dot,.fq-seg{cursor:pointer;transition:opacity .15s,transform .15s}
+  .fq-bar:hover,.fq-dot:hover,.fq-seg:hover{opacity:.78}
+  .fq-tip{position:fixed;z-index:9999;pointer-events:none;background:#1a1b2f;color:#fff;font-family:'Inter',sans-serif;font-size:12px;line-height:1.5;padding:9px 13px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:290px;opacity:0;transition:opacity .12s}
+  .fq-tip.on{opacity:1}
+  .fq-tip b{color:#ff7aa8;display:block;margin-bottom:3px;font-size:12.5px}
+  /* ---- diagramas com hotspot clicavel ---- */
+  .diagram [data-info]{cursor:pointer}
+  .diagram [data-info]:hover{filter:brightness(.94)}
+  .diagram-info{margin-top:12px;background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:12px 16px;font-size:12.5px;color:var(--fiap-muted);line-height:1.6;min-height:52px}
+  .diagram-info b{color:var(--fiap-white);display:block;margin-bottom:3px;font-size:13px}
+  /* ---- slider interativo ---- */
+  .ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+  .ctrl label{font-size:12px;font-weight:700;color:var(--fiap-text)}
+  .ctrl input[type=range]{flex:1;min-width:180px;accent-color:var(--fiap-pink)}
+  .ctrl output{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--fiap-pink);min-width:44px;text-align:right}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+  .tab{font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;border:1px solid var(--fiap-border);background:var(--fiap-surface2);color:var(--fiap-muted);cursor:pointer;user-select:none;transition:all .15s}
+  .tab.on{background:var(--fiap-pink);border-color:var(--fiap-pink);color:#fff}
+  .tab-panel{display:none}
+  .tab-panel.on{display:block}
+
+</style>
+
+<style id="slide-nav-style">
+  html, body { overflow: visible !important; height: auto !important; scroll-behavior: smooth; }
+  .slide { height: auto !important; min-height: 100vh; max-height: none !important; overflow: visible !important; }
+  @media print {
+    .slide { page-break-after: always; min-height: auto; padding: 30px 40px; }
+    .slide-number, .slide-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="slide-viewport">
+
+
+<!-- S01 CAPA -->
+<div class="slide slide-cover">
+  <svg width="160" height="40" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="margin-top:40px" class="cover-course">PROMPT ENGINEERING AND ARTIFICIAL INTELLIGENCE</div>
+  <div class="cover-title">Role prompting e<br>parâmetros do modelo</div>
+  <div class="cover-subtitle">Aula 07/14 — Módulo 2: Técnicas de Prompt · 🏁 Encerra CKP02</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">👨‍🏫 Prof. Jorge Luiz Gomes</div>
+    <div class="cover-meta-item">⏱️ 1h40min</div>
+    <div class="cover-meta-item">🐍 Código: dict + indexação</div>
+    <div class="cover-meta-item">🏁 CKP02 entrega hoje</div>
+  </div>
+  <div class="slide-number">01 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Agenda da Aula</h2>
+  <div class="agenda-item"><div class="agenda-num">1</div><div class="agenda-text">Revisão do M2 + Glossário de hoje</div><div class="agenda-time">10 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">2</div><div class="agenda-text">System prompt vs. user prompt — quem fala o quê</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">3</div><div class="agenda-text">Personas: o mesmo assistente, comportamentos radicalmente diferentes</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">4</div><div class="agenda-text">🚀 Demo: 3 personas, mesma pergunta, código ao vivo</div><div class="agenda-time">20 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">5</div><div class="agenda-text">Temperature, top-p e max_tokens na prática — revisão aplicada</div><div class="agenda-time">10 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">6</div><div class="agenda-text">💻 Lab: definir a persona — lacunas no system prompt</div><div class="agenda-time">20 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">7</div><div class="agenda-text">🏁 CKP02 — enunciado completo + dúvidas</div><div class="agenda-time">10 min</div></div>
+  <div class="callout callout-blue" style="margin-top:12px">
+    <div class="callout-title">🔗 Você agora tem o toolkit completo do M2</div>
+    <div class="callout-body">4 componentes (A04) → Few-shot (A05) → CoT (A06) → Role + parâmetros (A07). Ao final desta aula, o CKP02 pode ser montado com tudo que foi aprendido no módulo.</div>
+  </div>
+  <div class="slide-number">02 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Glossário da Aula 07</h2>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card" style="border-top:3px solid var(--fiap-green)">
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">System prompt</div>
+      <div class="card-body">Instrução especial que define o <strong>comportamento global</strong> do assistente — enviada antes de qualquer mensagem do usuário. O usuário normalmente não vê o system prompt.<br><br><strong>Analogia:</strong> o briefing que o gerente dá para o atendente antes de ele entrar em campo — o cliente só vê o atendente, não o briefing.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-blue)">
+      <div class="card-icon">👤</div>
+      <div class="card-title">Persona</div>
+      <div class="card-body">A identidade, especialidade e estilo de comunicação que o model adota via system prompt. Não é só tom — afeta vocabulário, profundidade, formato e o que o modelo prioriza.<br><br><strong>Analogia:</strong> o mesmo ator interpretando papéis diferentes — o texto que fala muda completamente dependendo do personagem.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-purple)">
+      <div class="card-icon">🎛️</div>
+      <div class="card-title">top_p (nucleus sampling)</div>
+      <div class="card-body">Parâmetro que limita os tokens candidatos àqueles que juntos somam P% de probabilidade. Alternativa ao temperature para controlar criatividade.<br><br><strong>Analogia:</strong> só considerar os candidatos que cobrem 90% das apostas — os outros 10% mais improváveis são descartados.</div>
+    </div>
+  </div>
+  <div class="callout callout-green">
+    <div class="callout-title">🔗 Conexão com as aulas anteriores</div>
+    <div class="callout-body">System prompt é o <strong>contexto de persona</strong> do Componente 2 (Aula 04) aplicado de forma estruturada e separada. Em vez de colocar "Você é um especialista em X" dentro do user prompt, ele vai num campo separado — o que dá mais controle e segurança.</div>
+  </div>
+  <div class="slide-number">03 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">01</div>
+  <div class="section-title">System prompt<br>vs. User prompt</div>
+  <div class="section-desc">Dois papéis distintos na conversa com o modelo. Quem fala o quê — e por que a separação importa para a segurança e o controle do sistema.</div>
+  <div class="slide-number">04 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Os 3 roles de uma mensagem</h2>
+  <p>Na API de LLMs, cada mensagem tem um <strong>role</strong> (papel) que define de onde ela vem e como o modelo a interpreta:</p>
+  <div style="background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;overflow:hidden;margin:16px 0">
+    <div style="display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--fiap-border)">
+      <div style="padding:16px;background:rgba(41,175,140,.06);border-right:1px solid var(--fiap-border);display:flex;align-items:center;justify-content:center">
+        <span style="font-size:12px;font-weight:700;color:var(--fiap-green);text-transform:uppercase;letter-spacing:1px">system</span>
+      </div>
+      <div style="padding:16px">
+        <div style="font-size:14px;color:var(--fiap-text);margin-bottom:4px"><strong>Instrução global — define o comportamento do assistente</strong></div>
+        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted)">{"role": "system", "content": "Você é um especialista em finanças pessoais..."}</div>
+        <div style="font-size:12px;color:var(--fiap-muted);margin-top:6px">📌 Enviado uma vez, no início. Invisível ao usuário final. Define persona, restrições e comportamento padrão.</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:130px 1fr;border-bottom:1px solid var(--fiap-border)">
+      <div style="padding:16px;background:rgba(61,156,204,.06);border-right:1px solid var(--fiap-border);display:flex;align-items:center;justify-content:center">
+        <span style="font-size:12px;font-weight:700;color:var(--fiap-blue);text-transform:uppercase;letter-spacing:1px">user</span>
+      </div>
+      <div style="padding:16px">
+        <div style="font-size:14px;color:var(--fiap-text);margin-bottom:4px"><strong>Mensagem do usuário — a pergunta ou pedido de cada turno</strong></div>
+        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted)">{"role": "user", "content": "Como devo guardar minha reserva de emergência?"}</div>
+        <div style="font-size:12px;color:var(--fiap-muted);margin-top:6px">📌 Gerado pelo usuário a cada mensagem. Visível na interface. Não deve redefinir o comportamento global.</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:130px 1fr">
+      <div style="padding:16px;background:rgba(124,96,198,.06);border-right:1px solid var(--fiap-border);display:flex;align-items:center;justify-content:center">
+        <span style="font-size:12px;font-weight:700;color:var(--fiap-purple);text-transform:uppercase;letter-spacing:1px">assistant</span>
+      </div>
+      <div style="padding:16px">
+        <div style="font-size:14px;color:var(--fiap-text);margin-bottom:4px"><strong>Resposta do modelo — usado no histórico de conversa</strong></div>
+        <div style="font-size:12px;font-family:'JetBrains Mono',monospace;color:var(--fiap-muted)">{"role": "assistant", "content": "Ideal manter em conta corrente de fácil acesso..."}</div>
+        <div style="font-size:12px;color:var(--fiap-muted);margin-top:6px">📌 Gerado pelo modelo. Incluído no histórico para dar contexto às próximas respostas. Você vai usar na Aula 09.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-orange">
+    <div class="callout-title">⚠️ Por que separar system de user?</div>
+    <div class="callout-body">Se você coloca a persona no user prompt, o usuário pode sobrescrever ou ignorar o comportamento em turnos seguintes. No system prompt, o modelo trata como instrução global — mais difícil de contornar e mais consistente ao longo da conversa.</div>
+  </div>
+  <div class="slide-number">05 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>System prompt no código Python</h2>
+  <p>Como enviar o system prompt junto com a mensagem do usuário na chamada à API:</p>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">system_prompt_exemplo.py</span></div>
+    <div class="code-body"><pre><span class="cm"># Sem system prompt (como nas aulas anteriores)</span>
+<span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+    <span class="va">messages</span><span class="op">=[{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="st">"O que é machine learning?"</span><span class="op">}]</span>
+<span class="op">)</span>
+
+<span class="cm"># COM system prompt — a persona é separada do pedido do usuário</span>
+<span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+    <span class="va">messages</span><span class="op">=[</span>
+        <span class="op">{</span>
+            <span class="st">"role"</span><span class="op">:</span> <span class="st">"system"</span><span class="op">,</span>    <span class="cm"># ← role "system"</span>
+            <span class="st">"content"</span><span class="op">:</span> <span class="st">"""Você é um professor universitário de tecnologia.
+Explique conceitos de forma clara e use analogias do cotidiano.
+Nunca use jargão sem explicar antes. Público-alvo: alunos de 1º ano."""</span>
+        <span class="op">},</span>
+        <span class="op">{</span>
+            <span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span>      <span class="cm"># ← role "user" — o pedido do usuário</span>
+            <span class="st">"content"</span><span class="op">:</span> <span class="st">"O que é machine learning?"</span>
+        <span class="op">}</span>
+    <span class="op">]</span>
+<span class="op">)</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">resp</span><span class="op">[</span><span class="st">"message"</span><span class="op">][</span><span class="st">"content"</span><span class="op">])</span></pre>
+    </div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">💡 A única diferença</div>
+    <div class="callout-body">O <code style="font-family:'JetBrains Mono',monospace;font-size:12px">messages</code> agora é uma lista com 2 dicionários: primeiro o system, depois o user. A ordem importa — o modelo lê na sequência. Tudo mais é igual às aulas anteriores.</div>
+  </div>
+  <div class="slide-number">06 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">02</div>
+  <div class="section-title">Personas</div>
+  <div class="section-desc">O mesmo assistente, 3 system prompts diferentes — e respostas radicalmente diferentes para a mesma pergunta. Persona não é só tom: é vocabulário, profundidade, prioridades e até o que o modelo decide omitir.</div>
+  <div class="slide-number">07 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que persona realmente muda no output</h2>
+  <p>Persona não é cosmético. Ela define o modelo mental do assistente — o que ele prioriza, o que omite e como estrutura a resposta.</p>
+  <div class="two-col">
+    <div>
+      <h3>O que muda com a persona</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-green);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)"><strong style="color:var(--fiap-white)">Vocabulário:</strong> o especialista técnico usa siglas; o professor explica cada uma; o jornalista as evita e usa metáforas</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-blue);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)"><strong style="color:var(--fiap-white)">Profundidade:</strong> o especialista vai fundo nos detalhes; o professor prioriza intuição; o jornalista busca o impacto</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-purple);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)"><strong style="color:var(--fiap-white)">Estrutura:</strong> especialista → lista técnica; professor → narrativa progressiva; jornalista → pirâmide invertida (mais importante primeiro)</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-orange);border-radius:0 8px 8px 0;font-size:13px;color:var(--fiap-muted)"><strong style="color:var(--fiap-white)">Tom:</strong> especialista → neutro/técnico; professor → paciente/encorajador; jornalista → crítico/questionador</div>
+      </div>
+    </div>
+    <div>
+      <h3>Quando persona é essencial</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:12px 14px;background:rgba(41,175,140,.06);border:1px solid rgba(41,175,140,.2);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Chatbot de atendimento:</strong> persona de suporte empático que conhece os produtos, nunca inventa informação, escalona para humano quando necessário
+        </div>
+        <div style="padding:12px 14px;background:rgba(61,156,204,.06);border:1px solid rgba(61,156,204,.2);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Tutor de idiomas:</strong> persona de professor paciente que corrige erros sem humilhar, adapta ao nível do aluno, dá explicações na língua nativa
+        </div>
+        <div style="padding:12px 14px;background:rgba(124,96,198,.06);border:1px solid rgba(124,96,198,.2);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Revisor de código:</strong> persona de engenheiro sênior que aponta problemas sem julgamento, sugere alternativas, explica o porquê de cada sugestão
+        </div>
+        <div style="padding:12px 14px;background:rgba(213,140,46,.06);border:1px solid rgba(213,140,46,.2);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Assistente jurídico:</strong> persona de advogado que sempre indica que não substitui consultoria real, é preciso em linguagem legal, não especula sobre casos
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">08 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>As 3 personas que vamos testar ao vivo</h2>
+  <p>Mesma pergunta: <em>"O que é inteligência artificial e por que está crescendo tanto?"</em></p>
+  <div class="persona-grid">
+    <div class="persona-card">
+      <div class="persona-header" style="background:rgba(61,156,204,.08);color:var(--fiap-blue)">👨‍💻 Especialista técnico</div>
+      <div class="persona-system">Você é um pesquisador sênior em IA com doutorado pelo MIT. Responda com precisão técnica. Use termos como transformers, gradient descent e backpropagation quando relevante. Não simplifique conceitos.</div>
+      <div class="persona-output"><strong style="color:var(--fiap-white)">Output esperado:</strong> denso, técnico, cheio de termos, provavelmente menciona arquitetura, computação e hardware</div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-header" style="background:rgba(41,175,140,.08);color:var(--fiap-green)">👩‍🏫 Professor paciente</div>
+      <div class="persona-system">Você é um professor universitário de tecnologia explicando para alunos de 1º ano. Use analogias simples do cotidiano. Explique todo termo técnico antes de usar. Tom encorajador.</div>
+      <div class="persona-output"><strong style="color:var(--fiap-white)">Output esperado:</strong> analogias, linguagem acessível, termos explicados, talvez use exemplos de aplicativos que os alunos conhecem</div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-header" style="background:rgba(213,140,46,.08);color:var(--fiap-orange)">📰 Jornalista crítico</div>
+      <div class="persona-system">Você é um jornalista investigativo especializado em tecnologia. Escreva de forma objetiva e crítica. Questione o hype. Mencione riscos e controvérsias. Formato: jornal de qualidade.</div>
+      <div class="persona-output"><strong style="color:var(--fiap-white)">Output esperado:</strong> pirâmide invertida, questionamentos sobre privacidade e empregos, menos entusiasmo, mais ceticismo</div>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="callout-title">🎯 O que observar na demo</div>
+    <div class="callout-body">Mesma pergunta, mesmo modelo, mesmo hardware — só o system prompt muda. Observe: o vocabulário é diferente? A estrutura é diferente? O que cada persona omite? O que prioriza? Alguma menciona riscos? Qual é mais longa?</div>
+  </div>
+  <div class="slide-number">09 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Código novo — dicionário Python</h2>
+  <p>O dicionário é a estrutura Python mais usada em sistemas com LLMs. Você vai vê-lo em todo código de aqui para frente.</p>
+  <div class="two-col">
+    <div>
+      <h3>O que é um dicionário</h3>
+      <div class="code-block" style="margin-top:8px">
+        <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+        <div class="code-body"><pre><span class="cm"># Dicionário: pares chave → valor, entre { }</span>
+<span class="va">pessoa</span> <span class="op">= {</span>
+    <span class="st">"nome"</span><span class="op">:</span>   <span class="st">"João"</span><span class="op">,</span>    <span class="cm"># chave: valor</span>
+    <span class="st">"idade"</span><span class="op">:</span>  <span class="num">22</span><span class="op">,</span>         <span class="cm"># chave: valor</span>
+    <span class="st">"curso"</span><span class="op">:</span>  <span class="st">"CC"</span><span class="op">,</span>        <span class="cm"># chave: valor</span>
+<span class="op">}</span>
+
+<span class="cm"># Acessar valor pela chave</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">pessoa</span><span class="op">[</span><span class="st">"nome"</span><span class="op">])</span>   <span class="cm"># → "João"</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">pessoa</span><span class="op">[</span><span class="st">"idade"</span><span class="op">])</span>  <span class="cm"># → 22</span>
+
+<span class="cm"># Adicionar nova chave</span>
+<span class="va">pessoa</span><span class="op">[</span><span class="st">"email"</span><span class="op">]</span> <span class="op">=</span> <span class="st">"joao@email.com"</span>
+
+<span class="cm"># Iterar sobre pares chave, valor</span>
+<span class="kw">for</span> <span class="va">chave</span><span class="op">,</span> <span class="va">valor</span> <span class="kw">in</span> <span class="va">pessoa</span><span class="op">.</span><span class="fn">items</span><span class="op">():</span>
+    <span class="nb">print</span><span class="op">(</span><span class="st">f"{chave}: {valor}"</span><span class="op">)</span></pre>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>Por que dicionário para personas</h3>
+      <div class="code-block" style="margin-top:8px">
+        <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div></div>
+        <div class="code-body"><pre><span class="cm"># ✅ Com dicionário: organizado, escalável</span>
+<span class="va">personas</span> <span class="op">= {</span>
+    <span class="st">"suporte"</span><span class="op">:</span>   <span class="st">"Você é suporte empático..."</span><span class="op">,</span>
+    <span class="st">"tecnico"</span><span class="op">:</span>   <span class="st">"Você é especialista técnico..."</span><span class="op">,</span>
+    <span class="st">"financeiro"</span><span class="op">:</span><span class="st">"Você é consultor financeiro..."</span><span class="op">,</span>
+<span class="op">}</span>
+<span class="cm"># Adicionar persona: só mais 1 linha no dict</span>
+<span class="cm"># Testar todas: 1 loop</span>
+<span class="cm"># Selecionar 1 pelo nome:</span>
+<span class="va">sistema</span> <span class="op">=</span> <span class="va">personas</span><span class="op">[</span><span class="st">"suporte"</span><span class="op">]</span>
+
+<span class="cm"># ❌ Sem dicionário: repetitivo, difícil de manter</span>
+<span class="va">persona_suporte</span>    <span class="op">=</span> <span class="st">"Você é suporte..."</span>
+<span class="va">persona_tecnico</span>    <span class="op">=</span> <span class="st">"Você é técnico..."</span>
+<span class="va">persona_financeiro</span> <span class="op">=</span> <span class="st">"Você é financeiro..."</span>
+<span class="cm"># 3 variáveis separadas = 3x mais trabalho para mudar</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">10 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que a demo mostrou — análise dos resultados</h2>
+  <p>Enquanto o professor executa ao vivo, anote as diferenças observadas:</p>
+  <div class="persona-grid">
+    <div class="persona-card">
+      <div class="persona-header" style="background:rgba(61,156,204,.08);color:var(--fiap-blue)">👨‍💻 Especialista</div>
+      <div class="persona-system" style="font-family:'Inter',sans-serif;font-size:12px">Resultado ao vivo →<br><br>Observe: termos técnicos usados? Profundidade? Tamanho da resposta?</div>
+      <div class="persona-output">O que foi omitido? Tom?</div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-header" style="background:rgba(41,175,140,.08);color:var(--fiap-green)">👩‍🏫 Professor</div>
+      <div class="persona-system" style="font-family:'Inter',sans-serif;font-size:12px">Resultado ao vivo →<br><br>Observe: analogias usadas? Explicou os termos antes? Tom diferente?</div>
+      <div class="persona-output">Mencionou exemplos do cotidiano? Qual?</div>
+    </div>
+    <div class="persona-card">
+      <div class="persona-header" style="background:rgba(213,140,46,.08);color:var(--fiap-orange)">📰 Jornalista</div>
+      <div class="persona-system" style="font-family:'Inter',sans-serif;font-size:12px">Resultado ao vivo →<br><br>Observe: mencionou riscos? Questionou o hype? Estrutura diferente?</div>
+      <div class="persona-output">Pirâmide invertida? Tom crítico?</div>
+    </div>
+  </div>
+  <div class="callout callout-purple">
+    <div class="callout-title">🎯 A grande lição</div>
+    <div class="callout-body">O mesmo modelo com o mesmo hardware gerou 3 textos que parecem escritos por 3 pessoas completamente diferentes. <strong>A persona é a ferramenta mais poderosa para calibrar o modelo para o contexto do seu produto.</strong> Um chatbot de suporte não deve soar como um pesquisador — e agora você sabe como garantir isso.</div>
+  </div>
+  <div class="slide-number">11 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">04</div>
+  <div class="section-title">Parâmetros na prática</div>
+  <div class="section-desc">Temperature, top-p e max_tokens — revisão aplicada. Agora com o código que você já conhece, vamos ver como cada parâmetro muda o comportamento para tipos específicos de tarefa.</div>
+  <div class="slide-number">12 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Temperature + top_p + max_tokens — configuração na API</h2>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">parametros_exemplo.py</span></div>
+    <div class="code-body"><pre><span class="cm"># Configuração completa com parâmetros explícitos</span>
+<span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+    <span class="va">messages</span><span class="op">=[</span>
+        <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"system"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="va">system_prompt</span><span class="op">},</span>
+        <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span>   <span class="st">"content"</span><span class="op">:</span> <span class="va">pergunta</span><span class="op">}</span>
+    <span class="op">],</span>
+    <span class="va">options</span><span class="op">={</span>
+        <span class="st">"temperature"</span><span class="op">:</span> <span class="num">0.7</span><span class="op">,</span>  <span class="cm"># criatividade: 0=determinístico, 1=criativo</span>
+        <span class="st">"top_p"</span><span class="op">:</span>       <span class="num">0.9</span><span class="op">,</span>  <span class="cm"># nucleus: considera só 90% mais prováveis</span>
+        <span class="st">"num_predict"</span><span class="op">:</span> <span class="num">300</span><span class="op">,</span>  <span class="cm"># max tokens na resposta (≈225 palavras)</span>
+    <span class="op">}</span>
+<span class="op">)</span></pre>
+        </div>
+      </div>
+  <div class="callout callout-blue" style="margin-top:8px">
+    <div class="callout-title">💡 Nota sobre a Ollama Cloud</div>
+    <div class="callout-body">Na Ollama Cloud, os parâmetros ficam dentro de <code style="font-family:'JetBrains Mono',monospace;font-size:12px">options={}</code>. O parâmetro de limite de tokens se chama <code style="font-family:'JetBrains Mono',monospace;font-size:12px">num_predict</code> (não <code style="font-family:'JetBrains Mono',monospace;font-size:12px">max_tokens</code> como na API da OpenAI). O Notebook Aluno já tem isso configurado — você não precisa lembrar do nome.</div>
+  </div>
+  <table class="data-table" style="margin-top:16px">
+    <thead><tr><th>Parâmetro</th><th>Para tarefa criativa</th><th>Para tarefa técnica/factual</th></tr></thead>
+    <tbody>
+      <tr><td><strong>temperature</strong></td><td>0.7–1.0 → variação desejada</td><td>0.0–0.3 → consistência necessária</td></tr>
+      <tr><td><strong>top_p</strong></td><td>0.9–1.0 → mais opções candidatas</td><td>0.1–0.5 → só as mais prováveis</td></tr>
+      <tr><td><strong>num_predict</strong></td><td>500–2000 → resposta pode ser longa</td><td>50–300 → resposta concisa e direta</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-number">13 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Persona + parâmetros — a combinação ideal</h2>
+  <p>Cada persona tipicamente se beneficia de uma configuração de parâmetros diferente:</p>
+  <table class="data-table">
+    <thead><tr><th>Persona</th><th>Temperature</th><th>top_p</th><th>num_predict</th><th>Justificativa</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--fiap-red)">Suporte ao cliente</strong></td>
+        <td>0.3</td><td>0.7</td><td>200</td>
+        <td>Respostas consistentes, diretas, sem inventar políticas</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-blue)">Especialista técnico</strong></td>
+        <td>0.1</td><td>0.5</td><td>500</td>
+        <td>Alta precisão técnica, pode ser detalhado, pouca variação</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-green)">Professor</strong></td>
+        <td>0.6</td><td>0.9</td><td>600</td>
+        <td>Variar as analogias, respostas mais longas para explicar bem</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-purple)">Gerador de ideias</strong></td>
+        <td>0.9</td><td>1.0</td><td>400</td>
+        <td>Máxima criatividade, cada chamada deve ser diferente</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-orange)">Classificador</strong></td>
+        <td>0.0</td><td>0.3</td><td>50</td>
+        <td>Determinístico, resposta curta e repetível ("POSITIVO")</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-green">
+    <div class="callout-title">💡 Regra prática para o CKP03</div>
+    <div class="callout-body">Quando você construir seu chatbot no CKP03, defina a persona no system prompt e ajuste os parâmetros para o tipo de tarefa. Um chatbot de suporte e um gerador criativo usam configurações opostas — e ambos funcionam melhor com a configuração certa.</div>
+  </div>
+  <div class="slide-number">14 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">05</div>
+  <div class="section-title">Lab — Notebook Aluno</div>
+  <div class="section-desc">As lacunas estão no conteúdo do system prompt. O código já está pronto — você define a persona.</div>
+  <div class="slide-number">15 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>💻 Notebook Aluno — Defina a persona</h2>
+  <p>O código está completo. Preencha apenas o texto entre as <span class="gap">lacunas</span> nos system prompts.</p>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">Aula_07_Aluno.ipynb</span></div>
+    <div class="code-body"><pre><span class="cm"># Setup — não modifique</span>
+<span class="cm"># [setup igual ao das aulas anteriores]</span>
+
+<span class="cm"># ── Complete as 3 personas ────────────────────────────────</span>
+<span class="va">personas</span> <span class="op">= {</span>
+
+    <span class="st">"persona_1"</span><span class="op">:</span> <span class="st">"""</span>
+<span class="gap">👉 LACUNA 1: Escreva o system prompt para uma persona de sua escolha</span>
+<span class="st">    Inclua: quem é, qual especialidade, tom, restrições, público-alvo.</span>
+<span class="st">    """</span><span class="op">,</span>
+
+    <span class="st">"persona_2"</span><span class="op">:</span> <span class="st">"""</span>
+<span class="gap">👉 LACUNA 2: Escreva uma segunda persona DIFERENTE da primeira</span>
+<span class="st">    Mesma área de domínio do CKP02 do seu grupo, persona diferente.</span>
+<span class="st">    """</span><span class="op">,</span>
+
+    <span class="st">"persona_3"</span><span class="op">:</span> <span class="st">"""</span>
+<span class="gap">👉 LACUNA 3: Escreva uma terceira persona — pode ser crítica ou cética</span>
+<span class="st">    Ex: auditora, jornalista investigativa, advogada do diabo...</span>
+<span class="st">    """</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="cm"># Pergunta teste — pode trocar pela do seu domínio</span>
+<span class="va">pergunta</span> <span class="op">=</span> <span class="st">"Quais são os principais benefícios e riscos de usar IA nesta área?"</span>
+
+<span class="cm"># Loop — não modifique</span>
+<span class="kw">for</span> <span class="va">nome</span><span class="op">,</span> <span class="va">system</span> <span class="kw">in</span> <span class="va">personas</span><span class="op">.</span><span class="fn">items</span><span class="op">():</span>
+    <span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+        <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+        <span class="va">messages</span><span class="op">=[</span>
+            <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"system"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="va">system</span><span class="op">},</span>
+            <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span>   <span class="st">"content"</span><span class="op">:</span> <span class="va">pergunta</span><span class="op">}</span>
+        <span class="op">],</span>
+        <span class="va">options</span><span class="op">={</span><span class="st">"temperature"</span><span class="op">:</span> <span class="num">0.7</span><span class="op">,</span> <span class="st">"num_predict"</span><span class="op">:</span> <span class="num">400</span><span class="op">}</span>
+    <span class="op">)</span>
+    <span class="nb">print</span><span class="op">(</span><span class="st">f"\n{'='*50}\n{nome.upper()}\n{resp['message']['content']}"</span><span class="op">)</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">16 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Role prompting no mercado</h2>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-green),var(--fiap-blue))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-green);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Plataformas de atendimento com IA</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Persona de agente de suporte com restrições</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">System prompt define: tom empático, linguagem da marca, o que o agente pode e não pode prometer, quando escalar para humano, idioma preferido por região. Cada empresa tem seu próprio system prompt que nunca é revelado ao usuário.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-blue),var(--fiap-purple))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Assistentes de código com IA</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Persona de par de programação</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">System prompt configura o assistente como "par de programação experiente" que sugere sem substituir, explica o raciocínio, segue convenções do projeto e nunca insere código sem comentário explicativo quando solicitado.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-purple),var(--fiap-pink))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-purple);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Plataformas de personagens de IA</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Personas de personagens ficcionais</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Plataforma onde usuários criam e interagem com personagens — cada um tem um system prompt extenso que define personalidade, memória, estilo de fala, valores e o que o personagem sabe ou não sabe. O product market fit inteiro é o system prompt.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-orange),var(--fiap-red))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Ferramentas de BI com IA</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Analista de dados como persona</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Sistema que responde perguntas em linguagem natural sobre bases de dados usa system prompt de "analista sênior que gera SQL, nunca inventa dados, sempre cita a fonte da tabela e avisa quando os dados são insuficientes para a conclusão."</div>
+    </div>
+  </div>
+  <div class="slide-number">17 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <div class="ckp-box">
+    <div class="ckp-header">
+      <span class="ckp-badge">🏁 CKP02</span>
+      <div class="ckp-title">Biblioteca de Prompts</div>
+    </div>
+    <div style="font-size:13px;color:var(--fiap-muted);margin-bottom:8px">Grupo 3–4 · Entrega hoje · Analítico · Estimativa: 3–4h por grupo · Código Python é diferencial, não obrigatório</div>
+    <div style="font-size:14px;color:var(--fiap-text);line-height:1.7;margin-bottom:16px">
+      Escolham <strong>1 domínio</strong> (saúde, educação, varejo, games, finanças, etc.) e criem <strong>8 prompts documentados</strong>. Para cada: objetivo, versão inicial, 1 iteração, versão final e output real colado no documento.
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-blue)">2 × Zero-shot</strong> <span style="color:var(--fiap-muted)">(A04)</span><br>
+        <span style="color:var(--fiap-muted);font-size:12px">Com os 4 componentes — instrução, contexto, input, formato</span>
+      </div>
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-green)">2 × Few-shot</strong> <span style="color:var(--fiap-muted)">(A05)</span><br>
+        <span style="color:var(--fiap-muted);font-size:12px">Com exemplos representativos — 1 por categoria</span>
+      </div>
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-purple)">2 × CoT</strong> <span style="color:var(--fiap-muted)">(A06)</span><br>
+        <span style="color:var(--fiap-muted);font-size:12px">"Pense passo a passo" ou CoT few-shot com raciocínio</span>
+      </div>
+      <div style="padding:12px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+        <strong style="color:var(--fiap-orange)">2 × Role</strong> <span style="color:var(--fiap-muted)">(A07 — hoje!)</span><br>
+        <span style="color:var(--fiap-muted);font-size:12px">System prompt com persona — use o que fez no lab</span>
+      </div>
+    </div>
+    <div class="ckp-rubric">
+      <div class="ckp-rubric-header">Rubrica de avaliação</div>
+      <div class="ckp-rubric-row"><span>Variedade e aplicação correta das 4 técnicas (zero, few, CoT, role)</span><span class="ckp-peso">35%</span></div>
+      <div class="ckp-rubric-row"><span>Qualidade dos prompts: exemplos representativos, personas bem definidas, CoT com raciocínio real</span><span class="ckp-peso">30%</span></div>
+      <div class="ckp-rubric-row"><span>Documentação: versão inicial → iteração → final com output real colado</span><span class="ckp-peso">25%</span></div>
+      <div class="ckp-rubric-row"><span>Organização, clareza e apresentação do documento</span><span class="ckp-peso">10%</span></div>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(41,175,140,.06);border-radius:8px;font-size:12px;color:var(--fiap-muted)">
+      <strong style="color:var(--fiap-green)">Diferencial (não obrigatório):</strong> testar os prompts em código Python e incluir o Colab notebook com os resultados.
+    </div>
+  </div>
+  <div class="slide-number">18 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Síntese do Módulo 2 completo — suas 4 ferramentas</h2>
+  <p>O que você aprendeu nas Aulas 04–07 e quando usar cada técnica:</p>
+  <table class="data-table">
+    <thead><tr><th>Técnica</th><th>Quando usar</th><th>O que resolve</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--fiap-pink)">4 Componentes (A04)</strong></td>
+        <td>Sempre — é a base de todo prompt</td>
+        <td>Respostas imprecisas, fora do formato esperado, modelo tomando decisões que deviam ser suas</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-blue)">Few-shot (A05)</strong></td>
+        <td>Formato específico exigido, múltiplas categorias, terminologia proprietária</td>
+        <td>Inconsistência no formato do output, modelo interpretando a tarefa de forma errada</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-purple)">Chain-of-Thought (A06)</strong></td>
+        <td>Raciocínio multi-etapa, matemática, análise de causa raiz, decisão com critérios</td>
+        <td>Erros em tarefas lógicas, respostas superficiais para análises complexas</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-green)">Role prompting (A07)</strong></td>
+        <td>Chatbots com comportamento consistente, produtos com identidade de assistente, múltiplas personas</td>
+        <td>Modelo "genérico demais", tom inadequado para o público, inconsistência entre sessões</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-purple">
+    <div class="callout-title">🔮 O M3 começa na próxima aula</div>
+    <div class="callout-body">Você domina as 4 técnicas fundamentais de prompt engineering. Agora começa o M3 — Python para IA. Nas próximas 4 aulas você vai construir funções, gerenciar histórico de conversa e terminar com um mini-chatbot completo de 40 linhas.</div>
+  </div>
+  <div class="slide-number">19 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Síntese da Aula 07</h2>
+  <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>System prompt define o comportamento global</strong> — é enviado antes do usuário, define persona, restrições e tom. O usuário não vê. O modelo trata como instrução de prioridade alta.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Persona não é só tom</strong> — muda vocabulário, profundidade, estrutura, o que o modelo prioriza e o que omite. Mesmo modelo, 3 textos completamente diferentes.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Dicionário Python:</strong> <code style="font-family:'JetBrains Mono',monospace;font-size:12px">{chave: valor}</code> — estrutura que agrupa dados relacionados. Acessado por chave, iterado com <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.items()</code>. Você vai usar em todo código de IA daqui para frente.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Cada persona tem uma configuração ideal de parâmetros.</strong> Suporte: temperature 0.3. Especialista: 0.1. Professor: 0.6. Gerador criativo: 0.9. Classificador: 0.0.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>O Módulo 2 está completo.</strong> Você tem 4 técnicas: 4 componentes, few-shot, CoT e role prompting. O CKP02 é a consolidação de tudo — 8 prompts com as 4 técnicas aplicadas ao domínio do grupo.</div>
+    </div>
+  </div>
+  <div class="slide-number">20 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Check-in intermediário — Aula 07</h2>
+  <p>Segundo check-in do semestre. Duas perguntas, QR Code abaixo, anônimo. Os resultados serão lidos em voz alta no início da Aula 08.</p>
+  <div style="display:flex;gap:32px;align-items:center;margin:24px 0">
+    <div style="width:160px;height:160px;background:var(--fiap-surface);border:2px solid var(--fiap-border);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <div style="text-align:center">
+        <div style="font-size:40px">📱</div>
+        <div style="font-size:11px;color:var(--fiap-muted);margin-top:8px">QR Code<br>Google Forms<br>(professor insere)</div>
+      </div>
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:14px">
+      <div style="padding:18px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:4px solid var(--fiap-green);border-radius:0 10px 10px 0">
+        <div style="font-size:12px;font-weight:700;color:var(--fiap-green);margin-bottom:6px">PERGUNTA 1</div>
+        <div style="font-size:15px;font-weight:600;color:var(--fiap-white)">O que ficou mais claro até agora no semestre?</div>
+        <div style="font-size:13px;color:var(--fiap-muted);margin-top:4px">Pode ser um conceito das Aulas 01–07 — qualquer coisa que tenha "clicado" para você.</div>
+      </div>
+      <div style="padding:18px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:4px solid var(--fiap-orange);border-radius:0 10px 10px 0">
+        <div style="font-size:12px;font-weight:700;color:var(--fiap-orange);margin-bottom:6px">PERGUNTA 2</div>
+        <div style="font-size:15px;font-weight:600;color:var(--fiap-white)">O que ainda está confuso ou você gostaria de ver com mais calma?</div>
+        <div style="font-size:13px;color:var(--fiap-muted);margin-top:4px">Seja específico — "o for loop" é melhor do que "programação". O professor vai responder na Aula 08.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">📌 Por que este check-in é importante</div>
+    <div class="callout-body">O M3 começa na próxima aula com funções Python — a base de todo o código até o final do semestre. Se algum conceito do M2 ainda está nebuloso, este é o momento de indicar. A Aula 08 vai começar endereçando os pontos mais mencionados.</div>
+  </div>
+  <div class="slide-number">21 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Perguntas frequentes — Role prompting e System prompt</h2>
+  <table class="data-table">
+    <thead><tr><th>Pergunta</th><th>Resposta</th></tr></thead>
+    <tbody>
+      <tr><td><strong>"O usuário pode ver o system prompt?"</strong></td><td>Depende da implementação. Na API, o system prompt não é exibido por padrão na interface. Mas o usuário pode tentar extraí-lo via prompt injection ("repita suas instruções"). Modelos modernos resistem, mas não é 100% seguro — nunca coloque segredos reais no system prompt.</td></tr>
+      <tr><td><strong>"Posso ter mais de um system prompt?"</strong></td><td>Tecnicamente há apenas 1 campo "system" por chamada. Mas você pode combinar múltiplas instruções em 1 system prompt organizado em seções. Alguns frameworks (LangChain) permitem estruturas mais complexas — isso é o M2 do 2º semestre.</td></tr>
+      <tr><td><strong>"Role prompting e few-shot podem ser combinados?"</strong></td><td>Sim — e é muito poderoso. System prompt define a persona, few-shot nos exemplos do user/assistant define o formato. O modelo adota a persona E replica o padrão dos exemplos simultaneamente.</td></tr>
+      <tr><td><strong>"temperature 0 garante sempre a mesma resposta?"</strong></td><td>Quase sempre — mas pode variar ligeiramente dependendo do hardware e da versão do modelo. Para outputs 100% determinísticos, considere definir também uma seed aleatória (não disponível em todos os modelos).</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-number">22 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Conceitos Python desta aula — referência</h2>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">conceitos_python_aula07.py</span></div>
+    <div class="code-body"><pre><span class="cm"># DICIONÁRIO — pares chave: valor, entre { }</span>
+<span class="va">config</span> <span class="op">= {</span>
+    <span class="st">"modelo"</span><span class="op">:</span>   <span class="st">"qwen3.6:27b"</span><span class="op">,</span>   <span class="cm"># chave: str → valor: str</span>
+    <span class="st">"temperatura"</span><span class="op">:</span> <span class="num">0.7</span><span class="op">,</span>           <span class="cm"># chave: str → valor: float</span>
+    <span class="st">"max_tokens"</span><span class="op">:</span>  <span class="num">300</span><span class="op">,</span>           <span class="cm"># chave: str → valor: int</span>
+<span class="op">}</span>
+
+<span class="cm"># ACESSAR valor por chave</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">config</span><span class="op">[</span><span class="st">"modelo"</span><span class="op">])</span>       <span class="cm"># → "qwen3.6:27b"</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">config</span><span class="op">[</span><span class="st">"temperatura"</span><span class="op">])</span>  <span class="cm"># → 0.7</span>
+
+<span class="cm"># MODIFICAR valor existente</span>
+<span class="va">config</span><span class="op">[</span><span class="st">"temperatura"</span><span class="op">]</span> <span class="op">=</span> <span class="num">0.9</span>   <span class="cm"># só troca o valor</span>
+
+<span class="cm"># ADICIONAR nova chave</span>
+<span class="va">config</span><span class="op">[</span><span class="st">"idioma"</span><span class="op">]</span> <span class="op">=</span> <span class="st">"pt-BR"</span>    <span class="cm"># nova entrada</span>
+
+<span class="cm"># VERIFICAR se chave existe</span>
+<span class="kw">if</span> <span class="st">"modelo"</span> <span class="kw">in</span> <span class="va">config</span><span class="op">:</span>
+    <span class="nb">print</span><span class="op">(</span><span class="st">"Chave existe!"</span><span class="op">)</span>
+
+<span class="cm"># ITERAR sobre pares — .items() retorna (chave, valor)</span>
+<span class="kw">for</span> <span class="va">chave</span><span class="op">,</span> <span class="va">valor</span> <span class="kw">in</span> <span class="va">config</span><span class="op">.</span><span class="fn">items</span><span class="op">():</span>
+    <span class="nb">print</span><span class="op">(</span><span class="st">f"{chave} = {valor}"</span><span class="op">)</span>
+
+<span class="cm"># DICIONÁRIO DENTRO DE LISTA — o que a API recebe</span>
+<span class="va">messages</span> <span class="op">= [</span>
+    <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"system"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="st">"Você é um professor..."</span><span class="op">},</span>
+    <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span>   <span class="st">"content"</span><span class="op">:</span> <span class="st">"O que é IA?"</span><span class="op">}</span>
+<span class="op">]</span>
+<span class="cm"># lista de dicionários — cada mensagem é 1 dicionário</span></pre>
+      </div>
+    </div>
+  <div class="slide-number">23 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que vem no Módulo 3 — Python para IA</h2>
+  <p>Próximas 4 aulas constroem o chatbot completo peça por peça:</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0">
+    <div style="padding:16px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-blue);border-radius:0 10px 10px 0">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-blue);margin-bottom:6px">AULA 08 — Funções, loops e chamada de API</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Por que encapsular em funções. Criar <code style="font-family:'JetBrains Mono',monospace;font-size:11px">chamar_llm(prompt, system="")</code> reutilizável. A peça que você vai usar em todo o M3.</div>
+    </div>
+    <div style="padding:16px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-green);border-radius:0 10px 10px 0">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-green);margin-bottom:6px">AULA 09 — Histórico de conversa</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">A lista <code style="font-family:'JetBrains Mono',monospace;font-size:11px">messages</code> que cresce. Por que sem histórico o chatbot "esquece". O loop de conversa.</div>
+    </div>
+    <div style="padding:16px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-purple);border-radius:0 10px 10px 0">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-purple);margin-bottom:6px">AULA 10 — Templates e variáveis</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">f-string como template de prompt. Função <code style="font-family:'JetBrains Mono',monospace;font-size:11px">montar_prompt()</code>. Reutilização de código.</div>
+    </div>
+    <div style="padding:16px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-orange);border-radius:0 10px 10px 0">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-orange);margin-bottom:6px">AULA 11 — Mini-chatbot integrador</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Aula 100% de lab. Integra A08+A09+A10. ~40 linhas. CKP03 entrega junto.</div>
+    </div>
+  </div>
+  <div class="slide-number">24 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">03</div>
+  <div class="section-title">Demo ao vivo</div>
+  <div class="section-desc">3 personas, mesma pergunta, código ao vivo. O código introduz o dicionário Python — uma estrutura nova que vai aparecer muito no resto do semestre.</div>
+  <div class="slide-number">25 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>🚀 Demo Prática ao Vivo — Dicionário de personas + loop</h2>
+  <div class="code-block">
+    <div class="code-header"><div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div><span class="code-filename">Aula_07_Demo.ipynb</span></div>
+    <div class="code-body"><pre><span class="cm"># Setup (igual às aulas anteriores — não repetido aqui)</span>
+
+<span class="cm"># ── NOVO: dicionário Python ────────────────────────────────
+# Dicionário: estrutura chave → valor, acessada por chave</span>
+<span class="va">personas</span> <span class="op">= {</span>
+    <span class="st">"especialista"</span><span class="op">:</span> <span class="st">"""Você é um pesquisador sênior em IA com doutorado pelo MIT.
+Responda com precisão técnica. Use termos como transformers,
+gradient descent e backpropagation quando relevante.
+Não simplifique conceitos."""</span><span class="op">,</span>
+
+    <span class="st">"professor"</span><span class="op">:</span> <span class="st">"""Você é um professor universitário de tecnologia
+explicando para alunos de 1º ano. Use analogias simples do
+cotidiano. Explique todo termo técnico antes de usar.
+Tom encorajador e paciente."""</span><span class="op">,</span>
+
+    <span class="st">"jornalista"</span><span class="op">:</span> <span class="st">"""Você é um jornalista investigativo especializado
+em tecnologia. Escreva de forma objetiva e crítica. Questione
+o hype. Mencione riscos e controvérsias. Formato: jornal de
+qualidade, pirâmide invertida."""</span><span class="op">,</span>
+<span class="op">}</span>
+
+<span class="cm"># Mesma pergunta para todas as personas</span>
+<span class="va">pergunta</span> <span class="op">=</span> <span class="st">"O que é inteligência artificial e por que está crescendo tanto?"</span>
+
+<span class="cm"># ── Loop que testa cada persona ──────────────────────────
+# personas.items() retorna pares (chave, valor)</span>
+<span class="kw">for</span> <span class="va">nome</span><span class="op">,</span> <span class="va">system</span> <span class="kw">in</span> <span class="va">personas</span><span class="op">.</span><span class="fn">items</span><span class="op">():</span>
+    <span class="va">resp</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+        <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+        <span class="va">messages</span><span class="op">=[</span>
+            <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"system"</span><span class="op">,</span>  <span class="st">"content"</span><span class="op">:</span> <span class="va">system</span><span class="op">},</span>
+            <span class="op">{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span>    <span class="st">"content"</span><span class="op">:</span> <span class="va">pergunta</span><span class="op">}</span>
+        <span class="op">]</span>
+    <span class="op">)</span>
+    <span class="nb">print</span><span class="op">(</span><span class="st">f"\n{'='*50}\nPERSONA: {nome.upper()}\n{'='*50}"</span><span class="op">)</span>
+    <span class="nb">print</span><span class="op">(</span><span class="va">resp</span><span class="op">[</span><span class="st">"message"</span><span class="op">][</span><span class="st">"content"</span><span class="op">])</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">26 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <div class="exercise">
+    <div class="exercise-header">
+      <div class="exercise-icon">🎭</div>
+      <div>
+        <div class="exercise-label">Lab — Aula 07</div>
+        <div class="exercise-title">Criar 3 personas para o domínio do CKP02
+          <span class="difficulty"><span class="star">★</span><span class="star empty">★</span><span class="star empty">★</span></span>
+        </div>
+      </div>
+    </div>
+    <p style="color:var(--fiap-muted);font-size:14px;margin-bottom:16px"><strong>Individual ou dupla · 20 minutos · Você vai reaproveitar no CKP02</strong></p>
+    <ol class="exercise-steps">
+      <li><strong>Escolha o domínio do seu grupo para o CKP02</strong> (saúde, educação, varejo, games, etc.) e escreva 3 personas diferentes que fariam sentido nesse domínio — completando as 3 lacunas.</li>
+      <li><strong>Execute o notebook.</strong> Veja as 3 respostas lado a lado para a mesma pergunta.</li>
+      <li><strong>Analise as diferenças:</strong> qual persona deu a resposta mais útil? Por que? O vocabulário mudou? O formato? O que cada uma priorizou?</li>
+      <li><strong>Diferencial — ajuste de parâmetros:</strong> na linha <code style="font-family:'JetBrains Mono',monospace;font-size:12px">options</code>, mude o temperature para cada persona (0.2, 0.7, 1.0) e rode novamente. Qual combinação persona + temperature gerou o melhor resultado?</li>
+    </ol>
+    <div style="padding:12px 16px;background:rgba(41,175,140,.06);border-radius:8px;border-left:3px solid var(--fiap-green);margin:12px 0">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-green);margin-bottom:4px">💡 Conexão direta com o CKP02</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Os 2 prompts "role" do CKP02 podem ser os 2 melhores system prompts que você criou neste lab. Documente a versão inicial, 1 iteração e a versão final — é exatamente o que o enunciado pede.</div>
+    </div>
+    <div class="exercise-hint">
+      💡 <strong>O que faz um bom system prompt de persona:</strong> quem é, o que sabe, como fala, o que nunca faz, para quem fala. 4–6 linhas bem escritas valem mais do que 20 linhas vagas.
+    </div>
+  </div>
+  <div class="slide-number">27 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Referências</h2>
+  <div class="ref-list">
+    <div class="ref-item"><span class="ref-tag ref-tag-book">Livro</span><div class="ref-text"><strong>Russell, S.; Norvig, P.</strong> — Inteligência Artificial. 3ª ed. Pearson, 2016. Cap. 2: Agentes inteligentes — a ideia de "agente com comportamento definido" é a base do role prompting.</div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-paper">Paper</span><div class="ref-text"><strong>Brown et al. (OpenAI)</strong> — "Language Models are Few-Shot Learners." NeurIPS, 2020. Seção sobre in-context learning e o papel do system prompt em calibrar o comportamento. <a href="https://arxiv.org/abs/2005.14165" style="color:var(--fiap-blue)">arxiv.org/abs/2005.14165</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>Anthropic</strong> — System prompts best practices. <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/system-prompts" style="color:var(--fiap-blue)">docs.anthropic.com</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>OpenAI</strong> — Best practices: use system messages. <a href="https://platform.openai.com/docs/guides/prompt-engineering#tactic-ask-the-model-to-adopt-a-persona-using-the-system-message" style="color:var(--fiap-blue)">platform.openai.com</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>DAIR.AI</strong> — Role Prompting. <a href="https://www.promptingguide.ai/techniques/role-prompting" style="color:var(--fiap-blue)">promptingguide.ai/techniques/role-prompting</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>Ollama</strong> — Python library: chat with system messages. <a href="https://github.com/ollama/ollama-python" style="color:var(--fiap-blue)">github.com/ollama/ollama-python</a></div></div>
+  </div>
+  <div class="slide-number">28 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-closing">
+  <svg width="120" height="30" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="font-size:30px;font-weight:800;color:var(--fiap-white);margin:24px 0 6px">Módulo 2 concluído 🎭</div>
+  <div style="font-size:15px;color:var(--fiap-muted);margin-bottom:12px;max-width:560px">Você tem agora 4 técnicas fundamentais de prompt engineering: 4 componentes, few-shot, chain-of-thought e role prompting. O próximo passo é transformar essas técnicas em código Python robusto.</div>
+  <div class="next-class">
+    <div class="next-label">Próxima Aula — Aula 08 · Módulo 3</div>
+    <div class="next-title">Funções, loops e a estrutura de uma chamada à API</div>
+    <div class="next-desc">Por que encapsular em funções. Criar a função reutilizável que vai usar em todo o M3. E entender por que o código da Aula 04 era bom mas não escalável.</div>
+  </div>
+  <div style="margin-top:20px;padding:12px 22px;background:rgba(3,105,161,.08);border:1px solid rgba(3,105,161,.2);border-radius:10px;max-width:560px;text-align:left">
+    <div style="font-size:12px;font-weight:700;color:var(--fiap-blue);margin-bottom:3px">🏁 CKP02 — Entrega hoje</div>
+    <div style="font-size:13px;color:var(--fiap-muted)">8 prompts (zero-shot × 2, few-shot × 2, CoT × 2, role × 2) · domínio livre · 3–4h por grupo · código é diferencial.</div>
+  </div>
+  <div style="margin-top:20px;font-size:12px;color:var(--fiap-muted)">Copyright © 2026 Prof. Jorge Luiz Gomes · profjorge.gomes@fiap.com.br · FIAP · Todos os direitos reservados.</div>
+  <div class="slide-number">29 / 29</div>
+</div>
+
+
+
+</div>
+<script>
+/* ===== FIAPCHART-2026 ===== */
+(function(){
+  var PAL=['#ED145B','#3D9CCC','#29AF8C','#7C60C6','#D58C2E','#C9492C','#4e4e68'];
+  var tip=document.createElement('div');tip.className='fq-tip';document.body.appendChild(tip);
+  function showTip(e,html){tip.innerHTML=html;tip.classList.add('on');moveTip(e);}
+  function moveTip(e){
+    var x=e.clientX+14,y=e.clientY+14;
+    if(x+300>window.innerWidth)x=e.clientX-tip.offsetWidth-14;
+    if(y+tip.offsetHeight+10>window.innerHeight)y=e.clientY-tip.offsetHeight-14;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  function hideTip(){tip.classList.remove('on');}
+  function bind(el,html){
+    el.addEventListener('mouseenter',function(e){showTip(e,html);});
+    el.addEventListener('mousemove',moveTip);
+    el.addEventListener('mouseleave',hideTip);
+    el.addEventListener('click',function(e){showTip(e,html);});
+  }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function ns(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+  function at(el,o){for(var k in o)el.setAttribute(k,o[k]);return el;}
+  function txt(x,y,s,o){var t=at(ns('text'),o||{});t.setAttribute('x',x);t.setAttribute('y',y);
+    t.setAttribute('font-family','Inter,sans-serif');t.textContent=s;return t;}
+  function split(s){return (s||'').split('|').map(function(v){return v.trim();});}
+  function nums(s){return split(s).map(parseFloat);}
+
+  /* ---------- grafico de barras (horizontal ou vertical) ---------- */
+  function bar(box){
+    var labels=split(box.dataset.labels),vals=nums(box.dataset.values),
+        notes=box.dataset.notes?split(box.dataset.notes):[],
+        unit=box.dataset.unit||'',horiz=box.dataset.orient!=='v',
+        max=Math.max.apply(null,vals)*1.02,
+        svg=ns('svg'),W=760,rowH=horiz?34:0,H=horiz?labels.length*rowH+16:250;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    if(horiz){
+      var lw=Math.min(230,10+Math.max.apply(null,labels.map(function(l){return l.length*6.6;})));
+      labels.forEach(function(lb,i){
+        var y=i*rowH+8,w=Math.max(3,(vals[i]/max)*(W-lw-92)),c=PAL[i%PAL.length];
+        svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+        var r=at(ns('rect'),{x:lw,y:y+5,width:w,height:19,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(lw+w+9,y+19,vals[i]+unit,{'font-size':'11.5','font-weight':'700',fill:c}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }else{
+      var bw=(W-60)/labels.length,base=205;
+      svg.appendChild(at(ns('line'),{x1:44,y1:base,x2:W-6,y2:base,stroke:'#e2e4ec','stroke-width':1.5}));
+      labels.forEach(function(lb,i){
+        var h=Math.max(2,(vals[i]/max)*168),x=52+i*bw,c=PAL[i%PAL.length];
+        var r=at(ns('rect'),{x:x,y:base-h,width:bw*.6,height:h,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(x+bw*.3,base-h-7,vals[i]+unit,{'font-size':'11','font-weight':'700',fill:c,'text-anchor':'middle'}));
+        svg.appendChild(txt(x+bw*.3,base+17,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }
+    return svg;
+  }
+
+  /* ---------- grafico de linhas multi-serie ---------- */
+  function line(box){
+    var xs=split(box.dataset.x),
+        series=JSON.parse(box.dataset.series),
+        unit=box.dataset.unit||'',logY=box.dataset.scale==='log',
+        W=760,H=260,L=52,R=14,T=14,B=38,
+        all=series.reduce(function(a,s){return a.concat(s.values);},[]),
+        mx=Math.max.apply(null,all),mn=logY?Math.max(0.0001,Math.min.apply(null,all)):0,
+        svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    function px(i){return L+i*((W-L-R)/Math.max(1,xs.length-1));}
+    function py(v){
+      var f=logY?(Math.log(Math.max(v,mn))-Math.log(mn))/(Math.log(mx)-Math.log(mn)):v/mx;
+      return H-B-f*(H-B-T);
+    }
+    for(var g=0;g<=4;g++){
+      var y=T+g*((H-B-T)/4);
+      svg.appendChild(at(ns('line'),{x1:L,y1:y,x2:W-R,y2:y,stroke:'#eef0f5','stroke-width':1}));
+    }
+    xs.forEach(function(lb,i){svg.appendChild(txt(px(i),H-B+19,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));});
+    series.forEach(function(s,k){
+      var c=s.color||PAL[k%PAL.length],d='';
+      s.values.forEach(function(v,i){d+=(i?' L ':'M ')+px(i).toFixed(1)+' '+py(v).toFixed(1);});
+      var path=at(ns('path'),{d:d,fill:'none',stroke:c,'stroke-width':2.4,'stroke-linejoin':'round','data-key':s.name});
+      svg.appendChild(path);
+      s.values.forEach(function(v,i){
+        var dot=at(ns('circle'),{cx:px(i),cy:py(v),r:5,fill:c,class:'fq-dot','data-key':s.name});
+        svg.appendChild(dot);
+        bind(dot,'<b>'+esc(s.name)+'</b>'+esc(xs[i])+': '+esc(v+unit)+(s.notes&&s.notes[i]?'<br>'+esc(s.notes[i]):''));
+      });
+    });
+    return svg;
+  }
+
+  /* ---------- barra empilhada 100% ---------- */
+  function stack(box){
+    var segs=JSON.parse(box.dataset.segments),W=760,H=64,
+        tot=segs.reduce(function(a,s){return a+s.value;},0),x=0,svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    segs.forEach(function(s,k){
+      var w=(s.value/tot)*W,c=s.color||PAL[k%PAL.length];
+      var r=at(ns('rect'),{x:x,y:8,width:Math.max(1,w-2),height:30,rx:4,fill:c,class:'fq-seg'});
+      svg.appendChild(r);
+      if(w>54)svg.appendChild(txt(x+w/2,28,Math.round(s.value/tot*100)+'%',
+        {'font-size':'12','font-weight':'800',fill:'#fff','text-anchor':'middle'}));
+      svg.appendChild(txt(x+2,54,s.name,{'font-size':'10.5',fill:'#4e4e68'}));
+      bind(r,'<b>'+esc(s.name)+'</b>'+esc(s.value)+' ('+Math.round(s.value/tot*100)+'%)'+(s.note?'<br>'+esc(s.note):''));
+      x+=w;
+    });
+    return svg;
+  }
+
+  /* ---------- softmax com slider de temperatura ---------- */
+  function soft(box){
+    var labels=split(box.dataset.labels),logits=nums(box.dataset.logits),
+        T=parseFloat(box.dataset.temp||'1'),W=760,rowH=30,H=labels.length*rowH+10,
+        svg=ns('svg'),bars=[],pcts=[],lw=190;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'distribuição de probabilidade'});
+    labels.forEach(function(lb,i){
+      var y=i*rowH+6,c=i===0?'#ED145B':(i<3?'#7C60C6':'#94a3b8');
+      svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+      var r=at(ns('rect'),{x:lw,y:y+5,width:1,height:17,rx:4,fill:c,class:'fq-bar'});
+      svg.appendChild(r);bars.push(r);
+      var p=txt(lw+8,y+18,'',{'font-size':'11.5','font-weight':'700',fill:c});
+      svg.appendChild(p);pcts.push(p);
+    });
+    function draw(t){
+      var e=logits.map(function(l){return Math.exp(l/t);}),
+          s=e.reduce(function(a,b){return a+b;},0),max=Math.max.apply(null,e)/s;
+      e.forEach(function(v,i){
+        var pr=v/s,w=Math.max(2,(pr/max)*(W-lw-72));
+        bars[i].setAttribute('width',w);
+        pcts[i].setAttribute('x',lw+w+9);
+        pcts[i].textContent=(pr*100).toFixed(1)+'%';
+        bars[i].__tip='<b>'+esc(labels[i])+'</b>logit '+logits[i].toFixed(1)+
+          ' · probabilidade '+(pr*100).toFixed(1)+'% com temperatura '+t.toFixed(2);
+      });
+    }
+    bars.forEach(function(r){
+      r.addEventListener('mouseenter',function(e){showTip(e,r.__tip);});
+      r.addEventListener('mousemove',moveTip);
+      r.addEventListener('mouseleave',hideTip);
+      r.addEventListener('click',function(e){showTip(e,r.__tip);});
+    });
+    var ctrl=document.createElement('div');ctrl.className='ctrl';
+    ctrl.innerHTML='<label>Temperatura</label>'+
+      '<input type="range" min="0.05" max="2" step="0.05" value="'+T+'"><output>'+T.toFixed(2)+'</output>';
+    var rg=ctrl.querySelector('input'),ou=ctrl.querySelector('output');
+    rg.addEventListener('input',function(){var v=parseFloat(rg.value);ou.textContent=v.toFixed(2);draw(v);});
+    box.appendChild(ctrl);
+    setTimeout(function(){draw(T);},0);
+    return svg;
+  }
+
+  var KIND={bar:bar,line:line,stack:stack,soft:soft};
+
+  document.querySelectorAll('.chart[data-chart]').forEach(function(box){
+    var fn=KIND[box.dataset.chart];if(!fn)return;
+    var svg;try{svg=fn(box);}catch(e){return;}
+    box.insertBefore(svg,box.querySelector('.chart-legend,.ctrl'));
+    /* legenda clicavel liga/desliga serie */
+    box.querySelectorAll('.chart-key[data-key]').forEach(function(key){
+      key.addEventListener('click',function(){
+        key.classList.toggle('off');
+        var off=key.classList.contains('off');
+        svg.querySelectorAll('[data-key="'+key.dataset.key+'"]').forEach(function(el){
+          el.style.display=off?'none':'';
+        });
+      });
+    });
+    if(!box.querySelector('.chart-hint')){
+      var h=document.createElement('div');h.className='chart-hint';
+      h.textContent='Passe o mouse (ou toque) sobre os elementos do gráfico para ver os detalhes.';
+      box.appendChild(h);
+    }
+  });
+
+  /* ---------- hotspots em diagramas SVG ---------- */
+  document.querySelectorAll('.diagram').forEach(function(dg){
+    var spots=dg.querySelectorAll('[data-info]');if(!spots.length)return;
+    var panel=dg.querySelector('.diagram-info');
+    if(!panel){panel=document.createElement('div');panel.className='diagram-info';
+      panel.innerHTML='<b>Diagrama interativo</b>Clique em qualquer bloco para ver a explicação detalhada.';
+      dg.appendChild(panel);}
+    var base=panel.innerHTML;
+    spots.forEach(function(s){
+      var title=s.getAttribute('data-title')||'Detalhe';
+      function open(){
+        spots.forEach(function(o){o.style.strokeWidth='';});
+        s.style.strokeWidth='4';
+        panel.innerHTML='<b>'+esc(title)+'</b>'+s.getAttribute('data-info');
+      }
+      s.addEventListener('click',open);
+      s.addEventListener('mouseenter',open);
+    });
+    dg.addEventListener('mouseleave',function(){
+      spots.forEach(function(o){o.style.strokeWidth='';});panel.innerHTML=base;
+    });
+  });
+
+  /* ---------- abas ---------- */
+  document.querySelectorAll('[data-tabs]').forEach(function(group){
+    var tabs=group.querySelectorAll('.tab'),panels=group.querySelectorAll('.tab-panel');
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){
+        tabs.forEach(function(o){o.classList.remove('on');});
+        panels.forEach(function(o){o.classList.remove('on');});
+        t.classList.add('on');if(panels[i])panels[i].classList.add('on');
+      });
+    });
+  });
+})();
+</script>
+
+
+
+</body>
+</html>

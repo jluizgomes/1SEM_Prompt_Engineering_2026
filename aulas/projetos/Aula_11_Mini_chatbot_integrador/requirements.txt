@@ -1,0 +1,6 @@
+# Dependências do projeto — Aula 11: Mini chatbot
+# Instale com:  pip install -r requirements.txt
+
+langchain-ollama
+langchain-core
+python-dotenv

@@ -1,0 +1,10 @@
+# FIAP · Prompt Engineering & AI — 1º Semestre 2026
+# Ignorar arquivos sensíveis e ambientes virtuais
+
+.env
+*.venv/
+/venv/
+/.chromium/
+/data/
+*.pyc
+__pycache__/

@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 02 — Como um LLM pensa: tokens, contexto e temperatura</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{--fiap-pink:#ED145B;--fiap-dark:#f5f6fa;--fiap-surface:#ffffff;--fiap-surface2:#f0f1f5;--fiap-border:#e2e4ec;--fiap-text:#1a1b2f;--fiap-muted:#4e4e68;--fiap-white:#1a1b2f;--fiap-green:#29AF8C;--fiap-blue:#3D9CCC;--fiap-purple:#7C60C6;--fiap-orange:#D58C2E;--fiap-red:#C9492C;--code-bg:#1e293b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',-apple-system,sans-serif;background:var(--fiap-dark);color:var(--fiap-text);line-height:1.7;font-size:15px}
+  .slide{width:100%;min-height:100vh;padding:60px 80px;position:relative;border-bottom:1px solid var(--fiap-border);display:flex;flex-direction:column;overflow:hidden}
+  .slide::before{content:'';position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(237,20,91,.04) 0%,transparent 70%);pointer-events:none}
+  .slide-number{position:absolute;bottom:30px;right:40px;font-size:12px;color:var(--fiap-muted);font-weight:500;letter-spacing:1px}
+  .slide-footer{position:absolute;bottom:30px;left:80px;font-size:11px;color:rgba(78,78,104,.6)}
+  .slide-cover{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 50%,#ecfdf5 100%);justify-content:center;align-items:center;text-align:center;padding:60px}
+  .cover-course{font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:20px}
+  .cover-title{font-size:44px;font-weight:800;color:var(--fiap-white);line-height:1.15;margin-bottom:16px;max-width:800px}
+  .cover-subtitle{font-size:18px;color:var(--fiap-muted);margin-bottom:40px}
+  .cover-meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+  .cover-meta-item{background:rgba(237,20,91,.1);border:1px solid rgba(237,20,91,.25);padding:8px 18px;border-radius:8px;font-size:13px;color:var(--fiap-text);font-weight:500}
+  .slide-section{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 100%);justify-content:center;align-items:flex-start;padding:80px 100px}
+  .section-number{font-size:72px;font-weight:900;color:var(--fiap-pink);opacity:.25;line-height:1;margin-bottom:10px}
+  .section-title{font-size:38px;font-weight:800;color:var(--fiap-white);line-height:1.2;margin-bottom:16px}
+  .section-desc{font-size:16px;color:var(--fiap-muted);max-width:600px}
+  .slide-content{background:var(--fiap-dark);padding-top:50px}
+  .slide-content h2{font-size:28px;font-weight:800;color:var(--fiap-white);margin-bottom:32px;padding-bottom:12px;border-bottom:2px solid var(--fiap-pink);display:inline-block}
+  .slide-content h3{font-size:20px;font-weight:700;color:var(--fiap-pink);margin:28px 0 16px}
+  .slide-content p{color:var(--fiap-text);margin-bottom:16px;max-width:950px}
+  .slide-content strong{color:var(--fiap-white)}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;margin:24px 0}
+  .card{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:24px}
+  .card-icon{font-size:28px;margin-bottom:12px}
+  .card-title{font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px}
+  .card-body{font-size:13px;color:var(--fiap-muted);line-height:1.6}
+  .data-table{width:100%;border-collapse:collapse;margin:20px 0;background:var(--fiap-surface);border-radius:12px;overflow:hidden;border:1px solid var(--fiap-border)}
+  .data-table th{background:var(--fiap-surface2);padding:12px 18px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-pink);border-bottom:1px solid var(--fiap-border)}
+  .data-table td{padding:12px 18px;font-size:13px;color:var(--fiap-text);border-bottom:1px solid rgba(0,0,0,.06);vertical-align:top}
+  .data-table tr:last-child td{border-bottom:none}
+  .callout{background:var(--fiap-surface);border-left:4px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0}
+  .callout-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--fiap-pink);margin-bottom:8px}
+  .callout-body{font-size:14px;color:var(--fiap-muted);line-height:1.6}
+  .callout-green{border-left-color:var(--fiap-green)}.callout-green .callout-title{color:var(--fiap-green)}
+  .callout-blue{border-left-color:var(--fiap-blue)}.callout-blue .callout-title{color:var(--fiap-blue)}
+  .callout-purple{border-left-color:var(--fiap-purple)}.callout-purple .callout-title{color:var(--fiap-purple)}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .badge-pink{background:rgba(237,20,91,.12);color:var(--fiap-pink)}
+  .badge-green{background:rgba(41,175,140,.12);color:var(--fiap-green)}
+  .badge-blue{background:rgba(61,156,204,.12);color:var(--fiap-blue)}
+  .badge-purple{background:rgba(124,96,198,.12);color:var(--fiap-purple)}
+  .badge-orange{background:rgba(213,140,46,.12);color:var(--fiap-orange)}
+  .exercise{background:linear-gradient(135deg,rgba(41,175,140,.06) 0%,rgba(61,156,204,.06) 100%);border:1px solid rgba(41,175,140,.2);border-radius:14px;padding:28px;margin:28px 0}
+  .exercise-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .exercise-icon{width:40px;height:40px;background:rgba(41,175,140,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .exercise-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-green)}
+  .exercise-title{font-size:17px;font-weight:700;color:var(--fiap-white)}
+  .exercise-steps{margin:16px 0;padding-left:20px}
+  .exercise-steps li{color:var(--fiap-text);font-size:14px;margin-bottom:8px;line-height:1.6}
+  .exercise-hint{background:rgba(61,156,204,.08);border:1px solid rgba(61,156,204,.2);border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:var(--fiap-blue)}
+  .difficulty{display:inline-flex;gap:2px;margin-left:8px}
+  .difficulty .star{color:var(--fiap-orange);font-size:14px}
+  .difficulty .star.empty{opacity:.25}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin:20px 0}
+  .three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin:20px 0}
+  .agenda-item{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;margin-bottom:10px}
+  .agenda-num{width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--fiap-pink);flex-shrink:0}
+  .agenda-text{font-size:14px;font-weight:600;color:var(--fiap-white);flex:1}
+  .agenda-time{font-size:12px;font-weight:600;color:var(--fiap-muted);background:var(--fiap-surface2);padding:4px 10px;border-radius:6px}
+  .slide-closing{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 50%,#ecfdf5 100%);justify-content:center;align-items:center;text-align:center}
+  .next-class{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:14px;padding:32px 48px;margin-top:40px;text-align:left;max-width:600px}
+  .next-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:8px}
+  .next-title{font-size:18px;font-weight:700;color:var(--fiap-white);margin-bottom:6px}
+  .next-desc{font-size:13px;color:var(--fiap-muted)}
+  .ref-list{margin:16px 0}
+  .ref-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .ref-tag{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;margin-top:2px;flex-shrink:0}
+  .ref-tag-book{background:rgba(108,99,255,.15);color:#a89cff}
+  .ref-tag-doc{background:rgba(255,209,102,.12);color:#ffd166}
+  .ref-tag-paper{background:rgba(255,107,107,.12);color:#ff9a9a}
+  .ref-text{font-size:12px;color:var(--fiap-muted);line-height:1.5}
+  /* Token viz */
+  .token-row{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0;padding:16px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.8}
+  .tok{padding:2px 8px;border-radius:4px;font-weight:600;font-size:13px}
+  .tok-a{background:rgba(237,20,91,.15);color:#ED145B;border:1px solid rgba(237,20,91,.3)}
+  .tok-b{background:rgba(61,156,204,.15);color:#3D9CCC;border:1px solid rgba(61,156,204,.3)}
+  .tok-c{background:rgba(41,175,140,.15);color:#29AF8C;border:1px solid rgba(41,175,140,.3)}
+  .tok-d{background:rgba(124,96,198,.15);color:#7C60C6;border:1px solid rgba(124,96,198,.3)}
+  .tok-e{background:rgba(213,140,46,.15);color:#D58C2E;border:1px solid rgba(213,140,46,.3)}
+  /* Temperatura visual */
+  .temp-scale{display:flex;margin:20px 0;border-radius:10px;overflow:hidden;border:1px solid var(--fiap-border);height:56px}
+  .temp-zone{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-direction:column;gap:2px}
+  .temp-label{font-size:10px;font-weight:500;opacity:.8}
+  /* Prediction chain */
+  .pred-chain{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:16px 0;padding:16px;background:var(--fiap-surface);border-radius:10px;border:1px solid var(--fiap-border)}
+  .pred-word{padding:6px 12px;background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:6px;font-size:14px;font-weight:500}
+  .pred-word.highlight{background:rgba(237,20,91,.12);border-color:rgba(237,20,91,.35);color:var(--fiap-pink);font-weight:700}
+  .pred-arrow{color:var(--fiap-muted);font-size:16px;font-weight:700}
+  .pred-choices{display:flex;gap:6px;flex-wrap:wrap}
+  .pred-choice{padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;border:1px solid}
+  .pred-choice.top{background:rgba(41,175,140,.12);border-color:rgba(41,175,140,.3);color:var(--fiap-green)}
+  .pred-choice.mid{background:rgba(61,156,204,.08);border-color:rgba(61,156,204,.2);color:var(--fiap-blue);opacity:.8}
+  .pred-choice.low{background:rgba(0,0,0,.04);border-color:var(--fiap-border);color:var(--fiap-muted);opacity:.6}
+  /* Context window diagram */
+  .ctx-window{border:2px dashed var(--fiap-blue);border-radius:12px;padding:16px;margin:16px 0;position:relative}
+  .ctx-label{position:absolute;top:-10px;left:16px;background:var(--fiap-dark);padding:0 8px;font-size:11px;font-weight:700;color:var(--fiap-blue);letter-spacing:.8px;text-transform:uppercase}
+  .ctx-msg{padding:8px 14px;border-radius:8px;font-size:13px;margin-bottom:8px;max-width:80%}
+  .ctx-msg.user{background:rgba(237,20,91,.08);border:1px solid rgba(237,20,91,.2);color:var(--fiap-text)}
+  .ctx-msg.ai{background:rgba(61,156,204,.08);border:1px solid rgba(61,156,204,.2);color:var(--fiap-text);margin-left:auto}
+  .ctx-msg.faded{opacity:.3}
+  .ctx-outside{padding:8px 14px;border-radius:8px;font-size:13px;margin-bottom:8px;background:rgba(0,0,0,.04);border:1px dashed var(--fiap-border);color:var(--fiap-muted);font-style:italic}
+  @media print{.slide{page-break-after:always;min-height:auto;padding:30px 40px}}
+/* ===== SCROLL-SUAVE-2026 ===== */
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{scroll-behavior:smooth}
+  .slide{scroll-margin-top:0}
+  @media (prefers-reduced-motion:reduce){html,body{scroll-behavior:auto}}
+
+/* ===== ADDON-FIAP-2026 ===== */
+  .glossary{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin:20px 0}
+  .gl-item{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:14px 18px}
+  .gl-item.gl-blue{border-left-color:var(--fiap-blue)}
+  .gl-item.gl-green{border-left-color:var(--fiap-green)}
+  .gl-item.gl-purple{border-left-color:var(--fiap-purple)}
+  .gl-item.gl-orange{border-left-color:var(--fiap-orange)}
+  .gl-term{font-size:14px;font-weight:800;color:var(--fiap-white);margin-bottom:4px}
+  .gl-pron{font-size:11px;font-weight:500;color:var(--fiap-muted);font-style:italic;margin-left:6px}
+  .gl-def{font-size:12.5px;color:var(--fiap-muted);line-height:1.55}
+  .gl-analogy{font-size:12px;color:var(--fiap-blue);margin-top:6px;padding-top:6px;border-top:1px dashed var(--fiap-border)}
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;overflow:visible;margin:18px 0}
+  .code-header{background:#0f172a;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #334155;display:flex;justify-content:space-between;gap:12px}
+  .code-body{padding:16px 18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.65;color:#e2e8f0;overflow-x:auto;white-space:pre}
+  .code-body .kw{color:#c678dd}.code-body .fn{color:#61afef}.code-body .st{color:#98c379}
+  .code-body .cm{color:#94a3b8;font-style:italic}.code-body .nb{color:#e5c07b}
+  .code-body .num{color:#d19a66}.code-body .op{color:#56b6c2}.code-body .tx{color:#e2e8f0}
+  .diagram{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .diagram-cap{font-size:11.5px;color:var(--fiap-muted);text-align:center;margin-top:10px;font-style:italic}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:20px 0}
+  .metric{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;padding:16px;text-align:center}
+  .metric-val{font-size:26px;font-weight:900;color:var(--fiap-pink);line-height:1}
+  .metric-lbl{font-size:11px;color:var(--fiap-muted);margin-top:6px;line-height:1.4}
+  .prompt-box{border-radius:10px;padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+  .prompt-good{background:rgba(41,175,140,.07);border:1px solid rgba(41,175,140,.3);color:var(--fiap-text)}
+  .prompt-bad{background:rgba(201,73,44,.07);border:1px solid rgba(201,73,44,.3);color:var(--fiap-text)}
+  .prompt-label{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-family:'Inter',sans-serif}
+  .prompt-good .prompt-label{color:var(--fiap-green)}.prompt-bad .prompt-label{color:var(--fiap-red)}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:20px 0}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .callout-red{border-left-color:var(--fiap-red)}.callout-red .callout-title{color:var(--fiap-red)}
+  .ref-tag-law{background:rgba(41,175,140,.15);color:#1f8f72}
+  .checklist{list-style:none;margin:16px 0}
+  .checklist li{padding:7px 0 7px 28px;position:relative;font-size:13.5px;color:var(--fiap-text)}
+  .checklist li::before{content:'\2713';position:absolute;left:0;color:var(--fiap-green);font-weight:800}
+  .pause{background:rgba(213,140,46,.08);border:1px dashed rgba(213,140,46,.45);border-radius:10px;padding:12px 18px;margin:18px 0;font-size:13px;color:#a8701f;font-weight:600}
+  .kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .kpi{background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--fiap-text)}
+  .data-table td code,.gl-def code,.callout-body code,.slide-content p code{font-family:'JetBrains Mono',monospace;font-size:.9em;background:var(--fiap-surface2);padding:1px 5px;border-radius:4px;color:#b3186a}
+  /* ---- graficos interativos ---- */
+  .chart{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:18px 20px 14px;margin:20px 0}
+  .chart-title{font-size:13px;font-weight:800;color:var(--fiap-white);margin-bottom:2px}
+  .chart-sub{font-size:11.5px;color:var(--fiap-muted);margin-bottom:12px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chart-key{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--fiap-muted);background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:20px;padding:4px 11px;cursor:pointer;user-select:none;transition:opacity .15s}
+  .chart-key.off{opacity:.35}
+  .chart-key i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .chart-hint{font-size:11px;color:var(--fiap-muted);font-style:italic;margin-top:10px;text-align:center}
+  .fq-bar,.fq-dot,.fq-seg{cursor:pointer;transition:opacity .15s,transform .15s}
+  .fq-bar:hover,.fq-dot:hover,.fq-seg:hover{opacity:.78}
+  .fq-tip{position:fixed;z-index:9999;pointer-events:none;background:#1a1b2f;color:#fff;font-family:'Inter',sans-serif;font-size:12px;line-height:1.5;padding:9px 13px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:290px;opacity:0;transition:opacity .12s}
+  .fq-tip.on{opacity:1}
+  .fq-tip b{color:#ff7aa8;display:block;margin-bottom:3px;font-size:12.5px}
+  /* ---- diagramas com hotspot clicavel ---- */
+  .diagram [data-info]{cursor:pointer}
+  .diagram [data-info]:hover{filter:brightness(.94)}
+  .diagram-info{margin-top:12px;background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:12px 16px;font-size:12.5px;color:var(--fiap-muted);line-height:1.6;min-height:52px}
+  .diagram-info b{color:var(--fiap-white);display:block;margin-bottom:3px;font-size:13px}
+  /* ---- slider interativo ---- */
+  .ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+  .ctrl label{font-size:12px;font-weight:700;color:var(--fiap-text)}
+  .ctrl input[type=range]{flex:1;min-width:180px;accent-color:var(--fiap-pink)}
+  .ctrl output{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--fiap-pink);min-width:44px;text-align:right}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+  .tab{font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;border:1px solid var(--fiap-border);background:var(--fiap-surface2);color:var(--fiap-muted);cursor:pointer;user-select:none;transition:all .15s}
+  .tab.on{background:var(--fiap-pink);border-color:var(--fiap-pink);color:#fff}
+  .tab-panel{display:none}
+  .tab-panel.on{display:block}
+
+</style>
+
+<style id="slide-nav-style">
+  html, body { overflow: visible !important; height: auto !important; scroll-behavior: smooth; }
+  .slide { height: auto !important; min-height: 100vh; max-height: none !important; overflow: visible !important; }
+  @media print {
+    .slide { page-break-after: always; min-height: auto; padding: 30px 40px; }
+    .slide-number, .slide-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="slide-viewport">
+
+
+<!-- S01 CAPA -->
+<div class="slide slide-cover">
+  <svg width="160" height="40" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="margin-top:40px" class="cover-course">PROMPT ENGINEERING AND ARTIFICIAL INTELLIGENCE</div>
+  <div class="cover-title">Como um LLM pensa<br>Tokens, contexto e temperatura</div>
+  <div class="cover-subtitle">Aula 02/14 — Módulo 1: Fundamentos de IA</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">👨‍🏫 Prof. Jorge Luiz Gomes</div>
+    <div class="cover-meta-item">⏱️ 1h40min</div>
+    <div class="cover-meta-item">🧠 Sem código — intuição primeiro</div>
+    <div class="cover-meta-item">🔍 Demo: tokenizador visual</div>
+  </div>
+  <div class="slide-number">01 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Agenda da Aula</h2>
+  <div class="agenda-item"><div class="agenda-num">1</div><div class="agenda-text">Revisão rápida + Glossário de hoje (3 termos novos)</div><div class="agenda-time">10 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">2</div><div class="agenda-text">O que é um token — a unidade básica do LLM</div><div class="agenda-time">20 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">3</div><div class="agenda-text">Como o LLM "lê" e gera texto — predição de próximo token</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">4</div><div class="agenda-text">Contexto: a memória de curto prazo do modelo</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">5</div><div class="agenda-text">Temperatura, top-p e o que controlam</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">6</div><div class="agenda-text">Demo ao vivo: tokenizador + playground</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">7</div><div class="agenda-text">Exercício individual + síntese</div><div class="agenda-time">10 min</div></div>
+  <div class="callout callout-blue" style="margin-top:16px">
+    <div class="callout-title">🔗 Conexão com a aula anterior</div>
+    <div class="callout-body">Na Aula 01 vimos que LLMs são baseados no Transformer e que o mesmo prompt produz respostas diferentes em modelos diferentes. Hoje entendemos <strong>por que</strong> — e as alavancas que você pode controlar.</div>
+  </div>
+  <div class="slide-number">02 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Glossário da Aula 02</h2>
+  <p>Três termos novos hoje. Como sempre: definição + analogia antes de qualquer explicação técnica.</p>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card" style="border-top:3px solid var(--fiap-pink)">
+      <div class="card-icon">🧩</div>
+      <div class="card-title">Token</div>
+      <div class="card-body">Fatia de palavra — pode ser uma palavra inteira, parte de uma palavra ou até um espaço. É a unidade mínima que o modelo processa.<br><br><strong>Analogia:</strong> como sílabas, mas não exatamente. "cachorro" pode virar ["cach", "orro"] ou ["ca", "chorro"] dependendo do tokenizador.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-blue)">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Contexto (Context Window)</div>
+      <div class="card-body">A quantidade máxima de tokens que o modelo consegue "ver" de uma vez — como a memória de curto prazo.<br><br><strong>Analogia:</strong> imagine que você só consegue ler uma folha A4 de cada vez. O que estava na folha anterior, você não lembra mais.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-green)">
+      <div class="card-icon">🎲</div>
+      <div class="card-title">Temperatura</div>
+      <div class="card-body">Parâmetro que controla o quanto o modelo "arrisca" ao escolher a próxima palavra. 0 = sempre a mais provável; 1 = mais aleatoriedade.<br><br><strong>Analogia:</strong> quanto o modelo "joga dados" ao escolher a próxima palavra.</div>
+    </div>
+  </div>
+  <div class="callout callout-green">
+    <div class="callout-title">💡 Esses 3 termos aparecem em toda API de LLM</div>
+    <div class="callout-body">Quando você chamar a Ollama Cloud no código Python (a partir da Aula 04), vai configurar exatamente esses três elementos: o que tokenizar, qual janela de contexto enviar, e qual temperatura usar.</div>
+  </div>
+  <div class="slide-number">03 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">01</div>
+  <div class="section-title">O que é um Token</div>
+  <div class="section-desc">O modelo não lê palavras. Não lê letras. Lê tokens. Entender isso muda como você pensa em prompts — e explica por que o modelo às vezes "corta" palavras de forma estranha.</div>
+  <div class="slide-number">04 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Token: a fatia que o modelo enxerga</h2>
+  <p>Tokens não são palavras. São pedaços de texto que o vocabulário do modelo aprendeu durante o treinamento.</p>
+  <div class="callout callout-blue">
+    <div class="callout-title">📌 Como funciona a tokenização</div>
+    <div class="callout-body">Palavras comuns em inglês viram 1 token. Palavras menos comuns, compostas ou em outros idiomas são divididas em múltiplos tokens. Espaços e pontuação também são tokens.</div>
+  </div>
+  <div style="margin:20px 0">
+    <p style="font-size:13px;color:var(--fiap-muted);margin-bottom:8px">Exemplo — frase tokenizada (cada cor = 1 token):</p>
+    <div class="token-row">
+      <span class="tok tok-a">Inteligência</span>
+      <span class="tok tok-b"> artificial</span>
+      <span class="tok tok-c"> está</span>
+      <span class="tok tok-d"> mudando</span>
+      <span class="tok tok-e"> o</span>
+      <span class="tok tok-a"> mercado</span>
+      <span class="tok tok-b"> de</span>
+      <span class="tok tok-c"> trabalho</span>
+      <span class="tok tok-d">.</span>
+    </div>
+    <p style="font-size:12px;color:var(--fiap-muted);margin-top:4px">→ 9 tokens para 9 palavras/pontuação. Frase simples = 1 token por palavra.</p>
+  </div>
+  <div style="margin:20px 0">
+    <p style="font-size:13px;color:var(--fiap-muted);margin-bottom:8px">Palavra técnica rara — pode virar múltiplos tokens:</p>
+    <div class="token-row">
+      <span class="tok tok-a">pneumo</span><span class="tok tok-b">ultra</span><span class="tok tok-c">micro</span><span class="tok tok-d">sc</span><span class="tok tok-e">opic</span><span class="tok tok-a">silico</span><span class="tok tok-b">vulcano</span><span class="tok tok-c">coni</span><span class="tok tok-d">osis</span>
+    </div>
+    <p style="font-size:12px;color:var(--fiap-muted);margin-top:4px">→ 9 tokens para 1 palavra. Por isso palavras técnicas "custam mais".</p>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Texto</th><th>Tokens (aprox.)</th><th>Observação</th></tr></thead>
+    <tbody>
+      <tr><td><code style="font-family:'JetBrains Mono',monospace">"Olá, como vai?"</code></td><td>5 tokens</td><td>Palavras curtas e comuns = 1 token cada</td></tr>
+      <tr><td><code style="font-family:'JetBrains Mono',monospace">"Hello, how are you?"</code></td><td>5 tokens</td><td>Inglês é mais eficiente — modelos foram treinados com mais dados em inglês</td></tr>
+      <tr><td>1 página A4 de texto</td><td>~500 tokens</td><td>Regra prática: 1 token ≈ ¾ de palavra em português</td></tr>
+      <tr><td>Livro de 300 páginas</td><td>~150.000 tokens</td><td>Acima da janela de contexto da maioria dos modelos gratuitos</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-number">05 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Por que tokens importam para Prompt Engineering</h2>
+  <p>Tokens têm três implicações diretas no seu trabalho com LLMs:</p>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card" style="border-left:4px solid var(--fiap-pink)">
+      <div class="card-icon">💰</div>
+      <div class="card-title">Custo</div>
+      <div class="card-body">APIs pagas cobram por token — input e output. Um prompt verboso custa mais. Saber economizar tokens sem perder qualidade é uma habilidade real de Prompt Engineering.<br><br><span class="badge badge-pink">APIs gratuitas também têm limite de tokens por minuto</span></div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--fiap-blue)">
+      <div class="card-icon">📏</div>
+      <div class="card-title">Limite de contexto</div>
+      <div class="card-body">Seu prompt + histórico de conversa + resposta do modelo precisam caber na janela de contexto. Se passar, o modelo "esquece" o início da conversa.<br><br><span class="badge badge-blue">Modelos comerciais de fronteira: 128k–1M+ tokens · Ollama Cloud (curso): 8k–32k tokens</span></div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--fiap-green)">
+      <div class="card-icon">🌍</div>
+      <div class="card-title">Idioma</div>
+      <div class="card-body">Português e outros idiomas não-ingleses geralmente usam mais tokens para o mesmo significado. "Hello" = 1 token. "Olá" = 1 token. Mas frases longas em PT-BR custam ~30% mais tokens que em inglês.<br><br><span class="badge badge-green">Impacto real no custo e no limite de contexto</span></div>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="callout-title">🧮 Regras práticas de estimativa</div>
+    <div class="callout-body">
+      • <strong>1 token ≈ ¾ de palavra</strong> em português<br>
+      • <strong>100 tokens ≈ 75 palavras</strong> (um parágrafo curto)<br>
+      • <strong>1 página A4</strong> ≈ 400–500 tokens<br>
+      • <strong>"Seja conciso"</strong> no prompt economiza tokens e melhora a resposta ao mesmo tempo
+    </div>
+  </div>
+  <div class="slide-number">06 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">02</div>
+  <div class="section-title">Como o LLM gera texto</div>
+  <div class="section-desc">O modelo não "pensa" uma resposta e depois escreve. Ele prevê o próximo token, um de cada vez. Esta ideia simples explica quase tudo que os LLMs fazem — e por que às vezes falham.</div>
+  <div class="slide-number">07 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Predição de próximo token — como o texto é gerado</h2>
+  <p>Cada palavra que o modelo escreve é uma <strong>previsão probabilística</strong> do que vem a seguir dado tudo o que veio antes.</p>
+  <div class="pred-chain">
+    <span class="pred-word">A</span>
+    <span class="pred-arrow">→</span>
+    <span class="pred-word">capital</span>
+    <span class="pred-arrow">→</span>
+    <span class="pred-word">do</span>
+    <span class="pred-arrow">→</span>
+    <span class="pred-word">Brasil</span>
+    <span class="pred-arrow">→</span>
+    <span class="pred-word">é</span>
+    <span class="pred-arrow">→</span>
+    <span class="pred-word highlight">?</span>
+    <span style="color:var(--fiap-muted);font-size:13px;margin-left:8px">Modelo escolhe o próximo token:</span>
+    <div class="pred-choices">
+      <span class="pred-choice top">Brasília (92%)</span>
+      <span class="pred-choice mid">São Paulo (4%)</span>
+      <span class="pred-choice low">Rio (2%)</span>
+      <span class="pred-choice low">uma... (2%)</span>
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:16px">
+    <div>
+      <h3>O processo passo a passo</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px"><strong>1.</strong> Você envia o prompt (tokenizado)</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px"><strong>2.</strong> O modelo calcula probabilidades para cada possível próximo token</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px"><strong>3.</strong> Escolhe 1 token (influenciado pela temperatura)</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px"><strong>4.</strong> Adiciona o token ao contexto e repete do passo 2</div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px"><strong>5.</strong> Para quando gera um token de fim de texto ou atinge max_tokens</div>
+      </div>
+    </div>
+    <div>
+      <h3>O que isso explica</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div class="callout callout-purple" style="margin:0">
+          <div class="callout-title">Por que o modelo alucina</div>
+          <div class="callout-body">Ele não "sabe" a resposta — escolhe o token mais provável dado o contexto. Se não há boa evidência no treinamento, escolhe algo que "parece certo" mas não é.</div>
+        </div>
+        <div class="callout callout-green" style="margin:0">
+          <div class="callout-title">Por que respostas variam</div>
+          <div class="callout-body">Com temperatura > 0, o modelo sorteia entre as opções mais prováveis. O mesmo prompt pode gerar respostas diferentes — é intencional.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">08 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Como o modelo aprendeu a prever</h2>
+  <p>Durante o treinamento, o modelo viu bilhões de textos e aprendeu: <em>"quando vejo X, a próxima palavra costuma ser Y"</em>.</p>
+  <div class="callout callout-blue">
+    <div class="callout-title">📖 O treinamento em termos simples</div>
+    <div class="callout-body">
+      <strong>Etapa 1 — Pré-treinamento:</strong> o modelo vê trilhões de tokens da internet, livros, código e artigos. Aprende padrões de linguagem puro — qual palavra tende a seguir qual, em qual contexto.<br><br>
+      <strong>Etapa 2 — Fine-tuning com feedback humano (RLHF):</strong> humanos avaliam respostas e ensinam o modelo a ser útil, honesto e seguro. É o que transforma um "preditor de texto" num "assistente".<br><br>
+      <strong>Resultado:</strong> o modelo tem um mapa interno de probabilidades para trilhões de sequências de texto. Não "sabe" fatos — sabe quais tokens tendem a aparecer juntos.
+    </div>
+  </div>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card">
+      <div class="card-icon">✅</div>
+      <div class="card-title">O que o modelo "sabe"</div>
+      <div class="card-body">Padrões de linguagem. Estrutura de argumentos. Como textos técnicos, criativos e formais se diferenciam. Código de programação. Muito de história, ciência e cultura geral.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">❌</div>
+      <div class="card-title">O que o modelo <em>não</em> sabe</div>
+      <div class="card-body">O que aconteceu ontem. Se uma informação específica é verdadeira. O que você quer dizer quando é ambíguo. Se ele próprio está cometendo um erro de raciocínio.</div>
+    </div>
+  </div>
+  <div class="slide-number">09 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">03</div>
+  <div class="section-title">A Janela de Contexto</div>
+  <div class="section-desc">O modelo não tem memória permanente entre conversas. Só "lembra" do que está dentro da janela de contexto atual — e quando ela enche, o início da conversa some.</div>
+  <div class="slide-number">10 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que é a janela de contexto</h2>
+  <p>Tudo que o modelo processa em uma chamada — seu prompt, o histórico de conversa e a resposta — precisa caber nessa janela.</p>
+  <div class="ctx-window">
+    <div class="ctx-label">JANELA DE CONTEXTO — o que o modelo "vê"</div>
+    <div class="ctx-msg user">💬 Usuário: Olá, me ajude a escrever um e-mail formal.</div>
+    <div class="ctx-msg ai">🤖 Modelo: Claro! Para quem é o e-mail e qual o assunto?</div>
+    <div class="ctx-msg user">💬 Usuário: Para o meu chefe, sobre o atraso de um projeto.</div>
+    <div class="ctx-msg ai">🤖 Modelo: Aqui está o rascunho: "Prezado [Nome]..."</div>
+    <div class="ctx-msg user">💬 Usuário: Pode deixar mais formal?</div>
+    <div class="ctx-msg ai" style="opacity:.6">🤖 Modelo: ← gerando resposta com acesso a tudo acima</div>
+  </div>
+  <div style="margin:16px 0;padding:14px 18px;background:rgba(201,73,44,.06);border:1px solid rgba(201,73,44,.2);border-radius:10px">
+    <div style="font-size:13px;font-weight:700;color:var(--fiap-red);margin-bottom:6px">⚠️ Quando a janela enche — o que acontece</div>
+    <div class="ctx-outside">💬 Usuário: Quero escrever um e-mail... [início da conversa, fora da janela]</div>
+    <div class="ctx-msg user">💬 Usuário: (muitas mensagens depois) Pode revisitar o e-mail original?</div>
+    <div style="font-size:13px;color:var(--fiap-muted);margin-top:8px">O modelo não consegue ver o início da conversa — ele "esqueceu". Vai responder como se não existisse.</div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">📏 Tamanho das janelas em 2026</div>
+    <div class="callout-body">
+      <strong>Modelos comerciais de fronteira:</strong> tipicamente 200k tokens (~150k palavras), alguns já ultrapassando 1M tokens · <strong>Modelos gratuitos via Ollama (usados nesta disciplina):</strong> 8k–32k tokens — menor, mas suficiente para os exercícios do curso
+    </div>
+  </div>
+  <div class="slide-number">11 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Por que o contexto importa para você</h2>
+  <p>Na prática, o gerenciamento de contexto é um dos problemas mais comuns em sistemas com LLMs.</p>
+  <div class="two-col">
+    <div>
+      <h3>Problema 1: System prompt longo</h3>
+      <div class="callout" style="margin:8px 0">
+        <div class="callout-title">❌ Ingênuo</div>
+        <div class="callout-body" style="font-family:'JetBrains Mono',monospace;font-size:12px">System prompt com 10.000 tokens de instruções + 50 mensagens de histórico + pergunta longa = sem espaço para resposta</div>
+      </div>
+      <div class="callout callout-green" style="margin:8px 0">
+        <div class="callout-title">✅ Estratégico</div>
+        <div class="callout-body">System prompt conciso. Histórico comprimido por resumo. Contexto relevante injetado dinamicamente. Espaço para a resposta.</div>
+      </div>
+    </div>
+    <div>
+      <h3>Problema 2: Conversa longa</h3>
+      <div class="callout" style="margin:8px 0">
+        <div class="callout-title">❌ Sem gestão</div>
+        <div class="callout-body">Após 30+ mensagens, o modelo começa a "esquecer" a instrução inicial e o contexto do problema. A qualidade degrada.</div>
+      </div>
+      <div class="callout callout-green" style="margin:8px 0">
+        <div class="callout-title">✅ Com gestão</div>
+        <div class="callout-body">Resumir mensagens antigas periodicamente. Manter apenas as últimas N mensagens. Pinear informações críticas no system prompt.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-purple">
+    <div class="callout-title">🔮 Você vai implementar isso</div>
+    <div class="callout-body">No M3 desta disciplina, você vai construir um chatbot com histórico de conversa em Python e ver na prática como gerenciar o contexto. Hoje é só a intuição — o código vem depois.</div>
+  </div>
+  <div class="slide-number">12 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">04</div>
+  <div class="section-title">Temperatura e Parâmetros</div>
+  <div class="section-desc">Temperatura não é calor. É a alavanca que controla o quanto o modelo "arrisca" ao escolher o próximo token. É um dos parâmetros mais importantes que você vai configurar.</div>
+  <div class="slide-number">13 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Temperatura — a alavanca de criatividade</h2>
+  <p>Lembra que o modelo calcula probabilidades para cada possível próximo token? A temperatura controla como ele usa essas probabilidades.</p>
+  <div class="temp-scale" style="margin:20px 0">
+    <div class="temp-zone" style="background:rgba(61,156,204,.12);flex:1">
+      <span style="font-size:20px;font-weight:800;color:var(--fiap-blue)">0.0</span>
+      <span class="temp-label" style="color:var(--fiap-blue)">Determinístico</span>
+    </div>
+    <div class="temp-zone" style="background:rgba(41,175,140,.12);flex:1">
+      <span style="font-size:16px;font-weight:700;color:var(--fiap-green)">0.3</span>
+      <span class="temp-label" style="color:var(--fiap-green)">Focado</span>
+    </div>
+    <div class="temp-zone" style="background:rgba(213,140,46,.12);flex:1">
+      <span style="font-size:16px;font-weight:700;color:var(--fiap-orange)">0.7</span>
+      <span class="temp-label" style="color:var(--fiap-orange)">Balanceado</span>
+    </div>
+    <div class="temp-zone" style="background:rgba(237,20,91,.12);flex:1">
+      <span style="font-size:16px;font-weight:700;color:var(--fiap-pink)">1.0</span>
+      <span class="temp-label" style="color:var(--fiap-pink)">Criativo</span>
+    </div>
+    <div class="temp-zone" style="background:rgba(201,73,44,.15);flex:1">
+      <span style="font-size:16px;font-weight:700;color:var(--fiap-red)">2.0+</span>
+      <span class="temp-label" style="color:var(--fiap-red)">Incoerente</span>
+    </div>
+  </div>
+  <div class="chart" data-chart="soft"
+       data-labels="bom|gostoso|surpreendente|equilibrado|assustador"
+       data-logits="4.8|4.1|2.3|1.6|0.4" data-temp="1">
+    <div class="chart-title">Como a temperatura reformata a mesma distribuição</div>
+    <div class="chart-sub">Depois de "O jantar estava muito", o modelo já calculou um <em>logit</em> (pontuação bruta) para cada candidato a próximo token. A temperatura não muda esses logits — muda como eles viram probabilidade.</div>
+    <div class="chart-hint">Arraste o controle de temperatura: perto de 0 a barra do candidato mais provável dispara sozinha; perto de 2 todas as barras se aproximam do mesmo tamanho.</div>
+  </div>
+  <table class="data-table">
+    <thead><tr><th>Temperatura</th><th>Comportamento</th><th>Use para</th><th>Não use para</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--fiap-blue)">0.0</strong></td>
+        <td>Sempre escolhe o token mais provável. Resposta 100% repetível.</td>
+        <td>Extração de dados, SQL, classificação, respostas com resposta certa</td>
+        <td>Textos criativos — vai parecer robótico</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-green)">0.1–0.4</strong></td>
+        <td>Pouca variação. Consistente mas com leve flexibilidade.</td>
+        <td>Análise técnica, documentação, sumarização</td>
+        <td>Poesia, brainstorm, variação de tom</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-orange)">0.5–0.8</strong></td>
+        <td>Equilíbrio entre consistência e criatividade. <strong>O padrão da maioria dos sistemas.</strong></td>
+        <td>Chatbots, assistentes, resposta geral</td>
+        <td>Tarefas que exigem resposta única e correta</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--fiap-pink)">0.9–1.2</strong></td>
+        <td>Alta variação. Cada resposta é diferente.</td>
+        <td>Geração criativa, brainstorm, histórias</td>
+        <td>Qualquer coisa que precise de precisão</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="slide-number">14 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Os outros parâmetros importantes</h2>
+  <p>Temperatura não é o único parâmetro. Mas é o mais importante para começar. Os outros dois que você vai usar:</p>
+  <div class="two-col">
+    <div>
+      <h3>top_p (nucleus sampling)</h3>
+      <div class="card" style="margin-top:8px">
+        <div class="card-body">
+          Em vez de controlar a aleatoriedade diretamente, <strong>top_p</strong> define que o modelo só considera tokens que juntos somam P% de probabilidade.<br><br>
+          <strong>Exemplo:</strong> com <code style="font-family:'JetBrains Mono',monospace;font-size:12px">top_p=0.9</code>, o modelo só considera as opções que juntas representam 90% da probabilidade — as menos prováveis são excluídas completamente.<br><br>
+          <strong>Regra prática:</strong> use temperature OU top_p para controlar criatividade, não os dois ao mesmo tempo. A maioria das APIs usa <code style="font-family:'JetBrains Mono',monospace;font-size:12px">top_p=1.0</code> como padrão (sem efeito).
+        </div>
+      </div>
+    </div>
+    <div>
+      <h3>max_tokens</h3>
+      <div class="card" style="margin-top:8px">
+        <div class="card-body">
+          Limita o tamanho máximo da resposta em tokens. O modelo para de gerar quando atinge esse limite — mesmo que a frase não esteja completa.<br><br>
+          <strong>Por que configurar:</strong> sem limite, o modelo pode gerar respostas muito longas desnecessariamente, consumindo tokens e aumentando latência.<br><br>
+          <strong>Regra prática:</strong> estime o tamanho da resposta esperada e defina <code style="font-family:'JetBrains Mono',monospace;font-size:12px">max_tokens</code> com folga de 20%. Para respostas curtas: 200. Para relatórios: 2000.
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="callout-title">📋 Resumo dos 3 parâmetros que você vai usar no código</div>
+    <div class="callout-body">
+      <code style="font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.06);padding:2px 6px;border-radius:3px">temperature</code> → controla criatividade vs. precisão &nbsp;|&nbsp;
+      <code style="font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.06);padding:2px 6px;border-radius:3px">max_tokens</code> → limita o tamanho da resposta &nbsp;|&nbsp;
+      <code style="font-family:'JetBrains Mono',monospace;background:rgba(0,0,0,.06);padding:2px 6px;border-radius:3px">top_p</code> → geralmente deixar em 1.0 e mexer na temperature
+    </div>
+  </div>
+  <div class="slide-number">15 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Por que o modelo "mente" — a alucinação explicada</h2>
+  <p>Agora que você entende predição de tokens, a alucinação faz sentido técnico.</p>
+  <div class="callout">
+    <div class="callout-title">🧠 Definição técnica</div>
+    <div class="callout-body">Alucinação é quando o modelo gera texto factualmente incorreto com a mesma confiança com que geraria texto correto. <strong>O modelo não "sabe" que está errado</strong> — ele apenas previu o próximo token mais plausível dado o contexto, e esse token não corresponde à realidade.</div>
+  </div>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card" style="border-left:4px solid var(--fiap-red)">
+      <div class="card-icon">⚠️</div>
+      <div class="card-title">Tipos comuns de alucinação</div>
+      <div class="card-body">
+        <strong>Fatos inventados:</strong> "Segundo o estudo de Silva (2022)..." — o estudo não existe.<br><br>
+        <strong>Datas erradas:</strong> "O evento aconteceu em [data plausível mas incorreta]".<br><br>
+        <strong>Mistura de fatos:</strong> dois fatos reais combinados de forma errada.<br><br>
+        <strong>Código que não funciona:</strong> função que parece correta mas tem um bug sutil.
+      </div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--fiap-green)">
+      <div class="card-icon">🛡️</div>
+      <div class="card-title">Como reduzir alucinações</div>
+      <div class="card-body">
+        <strong>Peça fontes:</strong> "Cite apenas fatos que você tem certeza. Diga 'não sei' se não souber."<br><br>
+        <strong>Temperature baixa:</strong> 0 ou 0.1 para tarefas factuais.<br><br>
+        <strong>Forneça o contexto:</strong> cole o documento no prompt em vez de pedir que o modelo "lembre".<br><br>
+        <strong>Verifique externamente:</strong> nunca confie em datas, nomes e números sem checar.
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-orange">
+    <div class="callout-title">⚠️ A regra mais importante do semestre</div>
+    <div class="callout-body">Um LLM é uma ferramenta de geração de texto plausível — não um oráculo de fatos. <strong>Toda informação crítica gerada por IA deve ser verificada em outra fonte antes de ser usada em decisões reais.</strong></div>
+  </div>
+  <div class="callout callout-purple" style="margin-top:16px">
+    <div class="callout-title">📖 Fundamentação — Por que o modelo nunca sabe se está errado</div>
+    <div class="callout-body">Freed, Jacobs e Rózsa (<em>Chatbots that Work</em>, Manning Publications, 2025) chegam à mesma definição técnica por outro caminho: o LLM nunca verifica se sua resposta é verdadeira, apenas se ela é uma continuação estatisticamente provável do prompt recebido — é exatamente essa lacuna entre "parece plausível" e "é verdadeiro" que define a alucinação. Do lado de quem constrói produtos com LLM, os autores confirmam a mesma tática que o card ao lado já recomenda: fornecer o contexto correto dentro do prompt, em vez de deixar o modelo recorrer ao que "lembra" do treinamento, reduz diretamente a chance de alucinação — porque tira do modelo a necessidade de adivinhar.</div>
+  </div>
+  <div class="slide-number">16 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Cenários práticos — quando tokens e contexto importam</h2>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-pink),var(--fiap-purple))"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:6px">CENÁRIO DE ALTO RISCO</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Alucinação em demonstração pública tem custo real</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Já aconteceu mais de uma vez: um modelo afirma, com total confiança, um fato verificável e errado durante uma demonstração ao vivo — e especialistas notam o erro em minutos. Quando o produto carrega uma marca, o custo reputacional de um fato não verificado supera de longe o tempo que levaria para checá-lo antes.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-blue),var(--fiap-green))"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-blue);margin-bottom:6px">PRÁTICA DE MERCADO</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Do Prompt Engineering ao Context Engineering</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">"Context Engineering" é o termo que descreve a prática — cada vez mais comum em sistemas de produção — de gerenciar estrategicamente o que entra na janela de contexto: o que fica fixo no system prompt, o que vem de ferramentas, o que é histórico descartável. Você volta a esse conceito, com profundidade, na Aula 04.</div>
+    </div>
+  </div>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr;margin-top:0">
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-green),var(--fiap-orange))"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-green);margin-bottom:6px">PADRÃO DE PRODUTO</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Temperatura diferente por tipo de resposta</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Sistemas de atendimento que lidam com dado factual (saldo, status, prazo) e com interação mais humana (uma reclamação, um pedido de desculpas) costumam variar a temperatura por tipo de resposta: próxima de 0 quando o dado não pode variar, mais alta quando o objetivo é soar natural.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-orange),var(--fiap-red))"></div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-orange);margin-bottom:6px">ECONOMIA DE ESCALA</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Custo de tokens em produção</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Exemplo ilustrativo: uma aplicação com 100 mil usuários/dia, cada um enviando 500 tokens, gasta 50 milhões de tokens/dia só de input. Otimizar prompts para usar 30% menos tokens já representa uma economia mensal na casa das dezenas de milhares de dólares.</div>
+    </div>
+  </div>
+  <div class="slide-number">17 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Síntese da Aula 02</h2>
+  <p>O que você deve conseguir explicar agora:</p>
+  <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px;color:var(--fiap-text)"><strong>Token é a unidade mínima</strong> que o LLM processa — nem letra, nem palavra, mas uma fatia. Português usa ~30% mais tokens que inglês para o mesmo conteúdo.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px;color:var(--fiap-text)"><strong>O LLM gera texto token a token</strong>, prevendo o mais provável dado o contexto. Não "pensa" uma resposta — prevê probabilisticamente a próxima palavra.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px;color:var(--fiap-text)"><strong>A janela de contexto é finita</strong> — o que não cabe dentro dela, o modelo não "lembra". Gerir contexto é uma das habilidades mais importantes em sistemas com LLM.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px;color:var(--fiap-text)"><strong>Temperatura controla criatividade vs. precisão.</strong> 0 para respostas determinísticas e factuais. 0.7–1.0 para criatividade e variação.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px;color:var(--fiap-text)"><strong>Alucinação é consequência direta da predição probabilística.</strong> O modelo prevê o próximo token mais plausível — não necessariamente o verdadeiro. Informações críticas sempre precisam de verificação externa.</div>
+    </div>
+  </div>
+  <div class="slide-number">18 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Aprofundamento — para quem quiser ir além</h2>
+  <p>Não é tarefa obrigatória. Mas se você ficou curioso com algum dos conceitos de hoje:</p>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <div class="card-icon">🎥</div>
+      <div class="card-title">Andrej Karpathy — "Let's build GPT"</div>
+      <div class="card-body">Vídeo de 1h no YouTube onde o ex-diretor de IA da Tesla constrói um GPT do zero em Python. Sem matemática pesada — intuição visual e código limpo. Melhor recurso gratuito para entender Transformers por dentro.<br><br><span class="badge badge-blue">youtube.com — buscar "Let's build GPT Karpathy"</span></div>
+    </div>
+    <div class="card">
+      <div class="card-icon">📖</div>
+      <div class="card-title">3Blue1Brown — "But what is a GPT?"</div>
+      <div class="card-body">Animação visual de 28 minutos explicando redes neurais e atenção sem equações difíceis. Se você gosta de aprender visualmente, este é o melhor ponto de partida.<br><br><span class="badge badge-purple">youtube.com/3blue1brown</span></div>
+    </div>
+  </div>
+  <div class="callout callout-blue" style="margin-top:16px">
+    <div class="callout-title">💡 Sugestão para antes da Aula 03</div>
+    <div class="callout-body">Pense em um sistema que você usa que poderia ter viés (app de banco, sistema de seleção, recomendação de conteúdo). Na Aula 03 vamos discutir ética, viés e LGPD — e exemplos reais tornam a discussão mais rica.</div>
+  </div>
+  <div class="slide-number">19 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Perguntas frequentes — Tokens e contexto</h2>
+  <table class="data-table">
+    <thead><tr><th>Pergunta</th><th>Resposta</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>"O modelo lembra de conversas anteriores?"</strong></td>
+        <td>Não — por padrão. Cada chamada à API começa do zero. O histórico de conversa precisa ser <strong>enviado junto</strong> com cada nova mensagem. Você vai implementar isso na Aula 09.</td>
+      </tr>
+      <tr>
+        <td><strong>"Se eu repetir a mesma pergunta, o modelo dá a mesma resposta?"</strong></td>
+        <td>Depende da temperatura. Com temperature=0: sim. Com temperature>0: provavelmente não. Isso é intencional — garante variação em respostas criativas.</td>
+      </tr>
+      <tr>
+        <td><strong>"Quanto custa 1 token?"</strong></td>
+        <td>Em APIs comerciais pagas, o custo gira em frações de centavo por 1.000 tokens de input — varia por modelo e provedor. Para atividades desta disciplina, usamos Ollama Cloud (gratuito). APIs pagas entram em projetos reais de mercado.</td>
+      </tr>
+      <tr>
+        <td><strong>"Por que modelos maiores são melhores?"</strong></td>
+        <td>Mais parâmetros = mais padrões de linguagem aprendidos = melhor capacidade de generalização. Mas "maior" não significa sempre "melhor para a sua tarefa" — um modelo menor e especializado pode superar um grande genérico.</td>
+      </tr>
+      <tr>
+        <td><strong>"O modelo pode aprender com nossa conversa?"</strong></td>
+        <td>Não em tempo real. O modelo que você usa já foi treinado. Sua conversa não muda os pesos do modelo. (Algumas empresas usam dados de uso para retreinar periodicamente, mas isso é uma decisão de infraestrutura, não de cada conversa.)</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="slide-number">20 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Contexto e tokens nos modelos que você vai usar</h2>
+  <table class="data-table">
+    <thead><tr><th>Modelo</th><th>Janela de contexto</th><th>Custo</th><th>Quando usar nesta disciplina</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Qwen3.6:27b</strong> (Ollama)</td>
+        <td>32k tokens</td>
+        <td><span class="badge badge-green">Gratuito</span></td>
+        <td>Padrão de todos os exercícios práticos com código</td>
+      </tr>
+      <tr>
+        <td><strong>Gemma4:9b</strong> (Ollama)</td>
+        <td>8k tokens</td>
+        <td><span class="badge badge-green">Gratuito</span></td>
+        <td>Alternativa mais rápida para testes rápidos</td>
+      </tr>
+      <tr>
+        <td><strong>Claude</strong> (claude.ai)</td>
+        <td>200k tokens</td>
+        <td><span class="badge badge-blue">Free tier</span></td>
+        <td>Demos em sala, análise de documentos longos</td>
+      </tr>
+      <tr>
+        <td><strong>ChatGPT</strong> (openai.com)</td>
+        <td>128k tokens</td>
+        <td><span class="badge badge-blue">Free tier</span></td>
+        <td>Comparativos de resposta, demos</td>
+      </tr>
+      <tr>
+        <td><strong>Gemini</strong> (gemini.google.com)</td>
+        <td>1M tokens</td>
+        <td><span class="badge badge-blue">Free tier</span></td>
+        <td>Comparativos, análise de documentos longos</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-green">
+    <div class="callout-title">✅ Regra simples para esta disciplina</div>
+    <div class="callout-body">Todo código Python usa Ollama Cloud com Qwen3.6:27b. Interfaces visuais (Claude, Gemini, ChatGPT) são para demos e exercícios analíticos. Nenhuma atividade obrigatória exige API paga.</div>
+  </div>
+  <div class="slide-number">21 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O modelo em uma imagem — o ciclo completo</h2>
+  <p>Do texto que você digita à resposta que aparece na tela:</p>
+  <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:36px;height:36px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--fiap-pink);flex-shrink:0">1</div>
+      <div><strong>Você escreve o prompt</strong> → texto em linguagem natural</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:36px;height:36px;background:rgba(61,156,204,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--fiap-blue);flex-shrink:0">2</div>
+      <div><strong>Tokenizador converte</strong> → sequência de números inteiros (IDs de tokens)</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:36px;height:36px;background:rgba(124,96,198,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--fiap-purple);flex-shrink:0">3</div>
+      <div><strong>Transformer processa</strong> → calcula probabilidades para o próximo token via mecanismo de atenção</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:36px;height:36px;background:rgba(213,140,46,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--fiap-orange);flex-shrink:0">4</div>
+      <div><strong>Temperatura filtra</strong> → controla qual token é escolhido (mais ou menos determinístico)</div>
+    </div>
+    <div style="display:flex;align-items:center;gap=16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;gap:16px">
+      <div style="width:36px;height:36px;background:rgba(41,175,140,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--fiap-green);flex-shrink:0">5</div>
+      <div><strong>Token escolhido</strong> → adicionado ao contexto, processo repete até gerar token de fim</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:rgba(237,20,91,.06);border:1px solid rgba(237,20,91,.2);border-radius:10px">
+      <div style="font-size:20px;flex-shrink:0">→</div>
+      <div><strong>Resultado:</strong> sequência de tokens convertida de volta em texto → você vê a resposta</div>
+    </div>
+  </div>
+  <div class="slide-number">22 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">05</div>
+  <div class="section-title">Demo ao vivo</div>
+  <div class="section-desc">Tokenizador do OpenAI no browser + mesmo prompt com temperature 0 vs 1. Você vai ver com os próprios olhos o que acabamos de discutir.</div>
+  <div class="slide-number">23 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>🚀 Demo Prática 1 — Tokenizador visual</h2>
+  <p>Acesse <strong style="color:var(--fiap-blue)">platform.openai.com/tokenizer</strong> no browser. O professor vai abrir e explorar ao vivo.</p>
+  <div class="callout callout-purple">
+    <div class="callout-title">🔬 Experimentos que faremos</div>
+    <div class="callout-body">
+      <strong>1.</strong> Uma frase simples em português — contar tokens vs. palavras.<br>
+      <strong>2.</strong> A mesma frase em inglês — comparar quantidade de tokens.<br>
+      <strong>3.</strong> Uma palavra técnica rara (ex: "pneumoultramicroscopicossilicovulcanoconiose") — ver como é fracionada.<br>
+      <strong>4.</strong> Código Python simples — ver como tokens funcionam em linguagem de programação.<br>
+      <strong>5.</strong> Emojis — surpresa: cada emoji costuma ser 1–3 tokens.
+    </div>
+  </div>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr;margin-top:16px">
+    <div class="card">
+      <div class="card-icon">👁️</div>
+      <div class="card-title">O que observar</div>
+      <div class="card-body">Como cada cor representa 1 token. Como espaços viram parte do token seguinte. Como pontuação é separada. Como palavras raras são fracionadas.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🤔</div>
+      <div class="card-title">Pergunta para refletir</div>
+      <div class="card-body">Se um prompt de 100 palavras em inglês usa 80 tokens, e o mesmo prompt em português usa 110 tokens — quanto isso impacta no limite de contexto de uma conversa longa?</div>
+    </div>
+  </div>
+  <div class="callout callout-green" style="margin-top:16px">
+    <div class="callout-title">💡 Por que isso importa para o seu prompt</div>
+    <div class="callout-body">Saber que espaços, pontuação e palavras raras "custam mais tokens" te ajuda a escrever prompts mais eficientes. <strong>"Seja conciso e use linguagem direta"</strong> é a consequência prática disso.</div>
+  </div>
+  <div class="slide-number">24 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>🚀 Demo 2 — Temperature 0 vs 1 no playground</h2>
+  <p>O professor vai abrir o playground de algum modelo (Claude ou OpenAI) e executar o mesmo prompt com temperaturas diferentes.</p>
+  <div class="callout callout-purple">
+    <div class="callout-title">📝 Prompt que será testado 3 vezes com temperature 0</div>
+    <div class="callout-body" style="font-family:'JetBrains Mono',monospace;font-size:14px;line-height:1.8">
+      "Continue esta frase de 3 formas criativas diferentes: 'Era uma vez um programador que descobriu que sua IA havia...'"
+    </div>
+  </div>
+  <div class="two-col" style="margin-top:16px">
+    <div>
+      <div style="padding:14px;background:rgba(61,156,204,.06);border:1px solid rgba(61,156,204,.2);border-radius:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--fiap-blue);margin-bottom:8px">🧊 TEMPERATURE = 0 — execute 3 vezes</div>
+        <div style="font-size:13px;color:var(--fiap-muted)">O que esperar: <strong>a mesma resposta todas as vezes.</strong> O modelo sempre escolhe o token mais provável. Zero aleatoriedade = zero variação.</div>
+      </div>
+    </div>
+    <div>
+      <div style="padding:14px;background:rgba(237,20,91,.06);border:1px solid rgba(237,20,91,.2);border-radius:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--fiap-pink);margin-bottom:8px">🔥 TEMPERATURE = 1 — execute 3 vezes</div>
+        <div style="font-size:13px;color:var(--fiap-muted)">O que esperar: <strong>3 continuações completamente diferentes.</strong> O modelo sorteia entre as opções mais prováveis. Cada execução é única.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout callout-green" style="margin-top:16px">
+    <div class="callout-title">🎯 A lição prática</div>
+    <div class="callout-body">
+      Para tarefas que precisam de resposta consistente (classificar um e-mail como spam/não spam, extrair um CPF de um texto): <strong>temperature = 0</strong>.<br>
+      Para tarefas que precisam de variação (gerar 3 opções de headline para um artigo): <strong>temperature = 0.8+</strong>.
+    </div>
+  </div>
+  <div class="slide-number">25 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">06</div>
+  <div class="section-title">Exercício Individual</div>
+  <div class="section-desc">10 minutos · Individual · Combina tokenizador (site) com análise de temperatura. Você vai prever e depois verificar.</div>
+  <div class="slide-number">26 / 29</div>
+</div>
+
+
+<div class="slide slide-content">
+  <div class="exercise">
+    <div class="exercise-header">
+      <div class="exercise-icon">🧪</div>
+      <div>
+        <div class="exercise-label">Exercício da Aula 02</div>
+        <div class="exercise-title">Tokens na prática + prevendo temperatura
+          <span class="difficulty"><span class="star">★</span><span class="star empty">★</span><span class="star empty">★</span></span>
+        </div>
+      </div>
+    </div>
+    <p style="color:var(--fiap-muted);font-size:14px;margin-bottom:16px"><strong>Individual · 10 minutos · Usar tokenizer.openai.com</strong></p>
+    <ol class="exercise-steps">
+      <li>
+        <strong>Parte 1 — Tokenizador (5 min):</strong> acesse <strong>platform.openai.com/tokenizer</strong> e cole os 3 textos abaixo. Anote quantos tokens cada um tem:
+        <div style="margin:10px 0;display:flex;flex-direction:column;gap:6px">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">A) "Prompt Engineering é a arte de conversar com IA de forma estratégica."</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">B) "Prompt Engineering is the art of talking to AI strategically."</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">C) "🤖🧠💻🎯✨🔥📊🚀❤️⭐" (só emojis)</div>
+        </div>
+      </li>
+      <li>
+        <strong>Parte 2 — Previsão de temperatura (5 min):</strong> para cada tarefa abaixo, escreva qual temperatura você usaria e por quê:
+        <div style="margin:10px 0;display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:13px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">1. Extrair o CNPJ de um texto legal</div>
+          <div style="font-size:13px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">2. Gerar 5 nomes criativos para uma startup de IA</div>
+          <div style="font-size:13px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">3. Responder "Qual a capital da França?"</div>
+          <div style="font-size:13px;padding:8px 12px;background:rgba(0,0,0,.04);border-radius:6px">4. Escrever um poema sobre tecnologia em estilo livre</div>
+        </div>
+      </li>
+    </ol>
+    <div class="exercise-hint">
+      💡 <strong>Gabarito da parte 1:</strong> A) ~13 tokens · B) ~11 tokens (inglês é mais eficiente) · C) surpreenda-se com quantos tokens emojis usam!<br>
+      <strong>Dica parte 2:</strong> pense se existe "resposta correta" ou se qualquer resposta válida serve.
+    </div>
+  </div>
+  <div class="slide-number">27 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Referências</h2>
+  <div class="ref-list">
+    <div class="ref-item"><span class="ref-tag ref-tag-book">Livro</span><div class="ref-text"><strong>Russell, S.; Norvig, P.</strong> — Inteligência Artificial. 3ª ed. Pearson, 2016. Cap. 2 (agentes e percepção do ambiente) e Cap. 18 (aprendizado a partir de exemplos).</div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-paper">Paper</span><div class="ref-text"><strong>Vaswani et al.</strong> — "Attention Is All You Need." NeurIPS, 2017. Arquitetura Transformer que fundamenta todo LLM moderno. <a href="https://arxiv.org/abs/1706.03762" style="color:var(--fiap-blue)">arxiv.org/abs/1706.03762</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-paper">Paper</span><div class="ref-text"><strong>Brown et al. (OpenAI)</strong> — "Language Models are Few-Shot Learners" (GPT-3). NeurIPS, 2020. Fundamento do comportamento in-context. <a href="https://arxiv.org/abs/2005.14165" style="color:var(--fiap-blue)">arxiv.org/abs/2005.14165</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>OpenAI</strong> — Tokenizer visual. <a href="https://platform.openai.com/tokenizer" style="color:var(--fiap-blue)">platform.openai.com/tokenizer</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>Anthropic</strong> — "Effective Context Engineering for AI Agents." Set/2025. <a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents" style="color:var(--fiap-blue)">anthropic.com/engineering</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>DAIR.AI</strong> — Prompt Engineering Guide: LLM Settings. <a href="https://www.promptingguide.ai/introduction/settings" style="color:var(--fiap-blue)">promptingguide.ai/introduction/settings</a></div></div>
+  </div>
+  <div class="slide-number">28 / 29</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-closing">
+  <svg width="120" height="30" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="font-size:32px;font-weight:800;color:var(--fiap-white);margin:24px 0 8px">Aula 02 concluída</div>
+  <div style="font-size:16px;color:var(--fiap-muted);margin-bottom:40px;max-width:500px">Agora você sabe o que está acontecendo por baixo do capô quando você aperta Enter num chatbot. Na próxima aula, antes de escrever código, vamos discutir o que pode dar errado — e por que isso importa antes de qualquer projeto.</div>
+  <div class="next-class">
+    <div class="next-label">Próxima Aula — Aula 03</div>
+    <div class="next-title">Ética, viés e LGPD — antes de construir qualquer coisa</div>
+    <div class="next-desc">Alucinações com impacto real, viés algorítmico demonstrado ao vivo, LGPD em 3 regras práticas para quem usa IA. E o CKP01 — que é analítico, sem código e muito mais interessante do que parece.</div>
+  </div>
+  <div style="margin-top:40px;font-size:12px;color:var(--fiap-muted)">Copyright © 2026 Prof. Jorge Luiz Gomes · profjorge.gomes@fiap.com.br · FIAP · Todos os direitos reservados.</div>
+  <div class="slide-number">29 / 29</div>
+</div>
+
+
+
+</div>
+<script>
+/* ===== FIAPCHART-2026 ===== */
+(function(){
+  var PAL=['#ED145B','#3D9CCC','#29AF8C','#7C60C6','#D58C2E','#C9492C','#4e4e68'];
+  var tip=document.createElement('div');tip.className='fq-tip';document.body.appendChild(tip);
+  function showTip(e,html){tip.innerHTML=html;tip.classList.add('on');moveTip(e);}
+  function moveTip(e){
+    var x=e.clientX+14,y=e.clientY+14;
+    if(x+300>window.innerWidth)x=e.clientX-tip.offsetWidth-14;
+    if(y+tip.offsetHeight+10>window.innerHeight)y=e.clientY-tip.offsetHeight-14;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  function hideTip(){tip.classList.remove('on');}
+  function bind(el,html){
+    el.addEventListener('mouseenter',function(e){showTip(e,html);});
+    el.addEventListener('mousemove',moveTip);
+    el.addEventListener('mouseleave',hideTip);
+    el.addEventListener('click',function(e){showTip(e,html);});
+  }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function ns(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+  function at(el,o){for(var k in o)el.setAttribute(k,o[k]);return el;}
+  function txt(x,y,s,o){var t=at(ns('text'),o||{});t.setAttribute('x',x);t.setAttribute('y',y);
+    t.setAttribute('font-family','Inter,sans-serif');t.textContent=s;return t;}
+  function split(s){return (s||'').split('|').map(function(v){return v.trim();});}
+  function nums(s){return split(s).map(parseFloat);}
+
+  /* ---------- grafico de barras (horizontal ou vertical) ---------- */
+  function bar(box){
+    var labels=split(box.dataset.labels),vals=nums(box.dataset.values),
+        notes=box.dataset.notes?split(box.dataset.notes):[],
+        unit=box.dataset.unit||'',horiz=box.dataset.orient!=='v',
+        max=Math.max.apply(null,vals)*1.02,
+        svg=ns('svg'),W=760,rowH=horiz?34:0,H=horiz?labels.length*rowH+16:250;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    if(horiz){
+      var lw=Math.min(230,10+Math.max.apply(null,labels.map(function(l){return l.length*6.6;})));
+      labels.forEach(function(lb,i){
+        var y=i*rowH+8,w=Math.max(3,(vals[i]/max)*(W-lw-92)),c=PAL[i%PAL.length];
+        svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+        var r=at(ns('rect'),{x:lw,y:y+5,width:w,height:19,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(lw+w+9,y+19,vals[i]+unit,{'font-size':'11.5','font-weight':'700',fill:c}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }else{
+      var bw=(W-60)/labels.length,base=205;
+      svg.appendChild(at(ns('line'),{x1:44,y1:base,x2:W-6,y2:base,stroke:'#e2e4ec','stroke-width':1.5}));
+      labels.forEach(function(lb,i){
+        var h=Math.max(2,(vals[i]/max)*168),x=52+i*bw,c=PAL[i%PAL.length];
+        var r=at(ns('rect'),{x:x,y:base-h,width:bw*.6,height:h,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(x+bw*.3,base-h-7,vals[i]+unit,{'font-size':'11','font-weight':'700',fill:c,'text-anchor':'middle'}));
+        svg.appendChild(txt(x+bw*.3,base+17,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }
+    return svg;
+  }
+
+  /* ---------- grafico de linhas multi-serie ---------- */
+  function line(box){
+    var xs=split(box.dataset.x),
+        series=JSON.parse(box.dataset.series),
+        unit=box.dataset.unit||'',logY=box.dataset.scale==='log',
+        W=760,H=260,L=52,R=14,T=14,B=38,
+        all=series.reduce(function(a,s){return a.concat(s.values);},[]),
+        mx=Math.max.apply(null,all),mn=logY?Math.max(0.0001,Math.min.apply(null,all)):0,
+        svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    function px(i){return L+i*((W-L-R)/Math.max(1,xs.length-1));}
+    function py(v){
+      var f=logY?(Math.log(Math.max(v,mn))-Math.log(mn))/(Math.log(mx)-Math.log(mn)):v/mx;
+      return H-B-f*(H-B-T);
+    }
+    for(var g=0;g<=4;g++){
+      var y=T+g*((H-B-T)/4);
+      svg.appendChild(at(ns('line'),{x1:L,y1:y,x2:W-R,y2:y,stroke:'#eef0f5','stroke-width':1}));
+    }
+    xs.forEach(function(lb,i){svg.appendChild(txt(px(i),H-B+19,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));});
+    series.forEach(function(s,k){
+      var c=s.color||PAL[k%PAL.length],d='';
+      s.values.forEach(function(v,i){d+=(i?' L ':'M ')+px(i).toFixed(1)+' '+py(v).toFixed(1);});
+      var path=at(ns('path'),{d:d,fill:'none',stroke:c,'stroke-width':2.4,'stroke-linejoin':'round','data-key':s.name});
+      svg.appendChild(path);
+      s.values.forEach(function(v,i){
+        var dot=at(ns('circle'),{cx:px(i),cy:py(v),r:5,fill:c,class:'fq-dot','data-key':s.name});
+        svg.appendChild(dot);
+        bind(dot,'<b>'+esc(s.name)+'</b>'+esc(xs[i])+': '+esc(v+unit)+(s.notes&&s.notes[i]?'<br>'+esc(s.notes[i]):''));
+      });
+    });
+    return svg;
+  }
+
+  /* ---------- barra empilhada 100% ---------- */
+  function stack(box){
+    var segs=JSON.parse(box.dataset.segments),W=760,H=64,
+        tot=segs.reduce(function(a,s){return a+s.value;},0),x=0,svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    segs.forEach(function(s,k){
+      var w=(s.value/tot)*W,c=s.color||PAL[k%PAL.length];
+      var r=at(ns('rect'),{x:x,y:8,width:Math.max(1,w-2),height:30,rx:4,fill:c,class:'fq-seg'});
+      svg.appendChild(r);
+      if(w>54)svg.appendChild(txt(x+w/2,28,Math.round(s.value/tot*100)+'%',
+        {'font-size':'12','font-weight':'800',fill:'#fff','text-anchor':'middle'}));
+      svg.appendChild(txt(x+2,54,s.name,{'font-size':'10.5',fill:'#4e4e68'}));
+      bind(r,'<b>'+esc(s.name)+'</b>'+esc(s.value)+' ('+Math.round(s.value/tot*100)+'%)'+(s.note?'<br>'+esc(s.note):''));
+      x+=w;
+    });
+    return svg;
+  }
+
+  /* ---------- softmax com slider de temperatura ---------- */
+  function soft(box){
+    var labels=split(box.dataset.labels),logits=nums(box.dataset.logits),
+        T=parseFloat(box.dataset.temp||'1'),W=760,rowH=30,H=labels.length*rowH+10,
+        svg=ns('svg'),bars=[],pcts=[],lw=190;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'distribuição de probabilidade'});
+    labels.forEach(function(lb,i){
+      var y=i*rowH+6,c=i===0?'#ED145B':(i<3?'#7C60C6':'#94a3b8');
+      svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+      var r=at(ns('rect'),{x:lw,y:y+5,width:1,height:17,rx:4,fill:c,class:'fq-bar'});
+      svg.appendChild(r);bars.push(r);
+      var p=txt(lw+8,y+18,'',{'font-size':'11.5','font-weight':'700',fill:c});
+      svg.appendChild(p);pcts.push(p);
+    });
+    function draw(t){
+      var e=logits.map(function(l){return Math.exp(l/t);}),
+          s=e.reduce(function(a,b){return a+b;},0),max=Math.max.apply(null,e)/s;
+      e.forEach(function(v,i){
+        var pr=v/s,w=Math.max(2,(pr/max)*(W-lw-72));
+        bars[i].setAttribute('width',w);
+        pcts[i].setAttribute('x',lw+w+9);
+        pcts[i].textContent=(pr*100).toFixed(1)+'%';
+        bars[i].__tip='<b>'+esc(labels[i])+'</b>logit '+logits[i].toFixed(1)+
+          ' · probabilidade '+(pr*100).toFixed(1)+'% com temperatura '+t.toFixed(2);
+      });
+    }
+    bars.forEach(function(r){
+      r.addEventListener('mouseenter',function(e){showTip(e,r.__tip);});
+      r.addEventListener('mousemove',moveTip);
+      r.addEventListener('mouseleave',hideTip);
+      r.addEventListener('click',function(e){showTip(e,r.__tip);});
+    });
+    var ctrl=document.createElement('div');ctrl.className='ctrl';
+    ctrl.innerHTML='<label>Temperatura</label>'+
+      '<input type="range" min="0.05" max="2" step="0.05" value="'+T+'"><output>'+T.toFixed(2)+'</output>';
+    var rg=ctrl.querySelector('input'),ou=ctrl.querySelector('output');
+    rg.addEventListener('input',function(){var v=parseFloat(rg.value);ou.textContent=v.toFixed(2);draw(v);});
+    box.appendChild(ctrl);
+    setTimeout(function(){draw(T);},0);
+    return svg;
+  }
+
+  var KIND={bar:bar,line:line,stack:stack,soft:soft};
+
+  document.querySelectorAll('.chart[data-chart]').forEach(function(box){
+    var fn=KIND[box.dataset.chart];if(!fn)return;
+    var svg;try{svg=fn(box);}catch(e){return;}
+    box.insertBefore(svg,box.querySelector('.chart-legend,.ctrl'));
+    /* legenda clicavel liga/desliga serie */
+    box.querySelectorAll('.chart-key[data-key]').forEach(function(key){
+      key.addEventListener('click',function(){
+        key.classList.toggle('off');
+        var off=key.classList.contains('off');
+        svg.querySelectorAll('[data-key="'+key.dataset.key+'"]').forEach(function(el){
+          el.style.display=off?'none':'';
+        });
+      });
+    });
+    if(!box.querySelector('.chart-hint')){
+      var h=document.createElement('div');h.className='chart-hint';
+      h.textContent='Passe o mouse (ou toque) sobre os elementos do gráfico para ver os detalhes.';
+      box.appendChild(h);
+    }
+  });
+
+  /* ---------- hotspots em diagramas SVG ---------- */
+  document.querySelectorAll('.diagram').forEach(function(dg){
+    var spots=dg.querySelectorAll('[data-info]');if(!spots.length)return;
+    var panel=dg.querySelector('.diagram-info');
+    if(!panel){panel=document.createElement('div');panel.className='diagram-info';
+      panel.innerHTML='<b>Diagrama interativo</b>Clique em qualquer bloco para ver a explicação detalhada.';
+      dg.appendChild(panel);}
+    var base=panel.innerHTML;
+    spots.forEach(function(s){
+      var title=s.getAttribute('data-title')||'Detalhe';
+      function open(){
+        spots.forEach(function(o){o.style.strokeWidth='';});
+        s.style.strokeWidth='4';
+        panel.innerHTML='<b>'+esc(title)+'</b>'+s.getAttribute('data-info');
+      }
+      s.addEventListener('click',open);
+      s.addEventListener('mouseenter',open);
+    });
+    dg.addEventListener('mouseleave',function(){
+      spots.forEach(function(o){o.style.strokeWidth='';});panel.innerHTML=base;
+    });
+  });
+
+  /* ---------- abas ---------- */
+  document.querySelectorAll('[data-tabs]').forEach(function(group){
+    var tabs=group.querySelectorAll('.tab'),panels=group.querySelectorAll('.tab-panel');
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){
+        tabs.forEach(function(o){o.classList.remove('on');});
+        panels.forEach(function(o){o.classList.remove('on');});
+        t.classList.add('on');if(panels[i])panels[i].classList.add('on');
+      });
+    });
+  });
+})();
+</script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha do Professor — Exercícios 2Sem Aula 01 | FIAP 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6fa;--card:#ffffff;--code:#1e293b;--bdr:#e2e4ec;--cy:#0891b2;--gn:#16a34a;--pu:#9333ea;--or:#d97706;--pk:#db2777;--yl:#ca8a04;--rd:#dc2626;--bl:#2563eb;--tl:#0d9488;--ag:#f472b6;--t1:#1a1b2f;--t2:#4e4e68;--t3:#6b6b80}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);line-height:1.75;font-size:17px;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--ag);border-radius:3px}
+.hero{min-height:60vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:3rem 2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 700px 450px at 20% 25%,rgba(244,114,182,.09),transparent),radial-gradient(ellipse 600px 400px at 80% 75%,rgba(147,51,234,.05),transparent),radial-gradient(ellipse 500px 350px at 50% 50%,rgba(8,145,178,.08),transparent);pointer-events:none}
+.hero-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:6px;text-transform:uppercase;color:var(--ag);margin-bottom:1.5rem;opacity:.7}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,var(--ag),var(--pu),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .sub{font-family:'Crimson Pro',serif;font-size:clamp(1rem,2vw,1.2rem);font-style:italic;color:var(--t2);max-width:700px;margin-bottom:1.5rem}
+.hero .info{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+.hero .info span{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:var(--card);border:1px solid var(--bdr);padding:.3rem .7rem;border-radius:6px;color:var(--t3)}
+nav.toc{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:.65rem 1rem;overflow-x:auto}
+.toc-inner{display:flex;gap:.15rem;max-width:1100px;margin:0 auto;justify-content:center;flex-wrap:nowrap}
+.toc a{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--t3);text-decoration:none;padding:.3rem .45rem;border-radius:5px;white-space:nowrap;transition:all .2s}
+.toc a:hover{color:var(--ag);background:rgba(219,39,119,.1)}
+.cc{max-width:1060px;margin:0 auto;padding:2rem 1.5rem 6rem}
+.bl{margin-bottom:4rem;scroll-margin-top:58px}
+.bh{display:flex;align-items:center;gap:1rem;margin-bottom:.5rem}
+.bn{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:2px;padding:.22rem .55rem;border-radius:4px;white-space:nowrap}
+.bt{font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:800;line-height:1.2}
+.btag{font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;color:var(--t2);margin-bottom:1.5rem;padding-left:.5rem;border-left:3px solid var(--t3)}
+.c--cy .bn{background:rgba(8,145,178,.12);color:var(--cy)}.c--cy .bt{color:var(--cy)}
+.c--gn .bn{background:rgba(22,163,74,.12);color:var(--gn)}.c--gn .bt{color:var(--gn)}
+.c--pu .bn{background:rgba(147,51,234,.12);color:var(--pu)}.c--pu .bt{color:var(--pu)}
+.c--or .bn{background:rgba(217,119,6,.12);color:var(--or)}.c--or .bt{color:var(--or)}
+.c--pk .bn{background:rgba(219,39,119,.12);color:var(--pk)}.c--pk .bt{color:var(--pk)}
+.c--yl .bn{background:rgba(202,138,4,.12);color:var(--yl)}.c--yl .bt{color:var(--yl)}
+.c--rd .bn{background:rgba(220,38,38,.12);color:var(--rd)}.c--rd .bt{color:var(--rd)}
+.c--bl .bn{background:rgba(37,99,235,.12);color:var(--bl)}.c--bl .bt{color:var(--bl)}
+.c--tl .bn{background:rgba(13,148,136,.12);color:var(--tl)}.c--tl .bt{color:var(--tl)}
+.c--ag .bn{background:rgba(244,114,182,.1);color:var(--ag)}.c--ag .bt{color:var(--ag)}
+.tp{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:1.6rem;margin-bottom:1.2rem;transition:border-color .3s}
+.tp:hover{border-color:rgba(219,39,119,.25)}
+.tp h3{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;margin-bottom:.8rem}
+.tp p{color:var(--t2);font-size:.92rem;line-height:1.8;margin-bottom:.6rem}
+.tp p:last-child{margin-bottom:0}
+.cb{background:var(--code);border:1px solid #334155;border-radius:10px;margin:1rem 0;overflow:hidden}
+.ch{display:flex;justify-content:space-between;align-items:center;padding:.5rem .85rem;background:#0f172a;border-bottom:1px solid #334155}
+.ch span{font-family:'JetBrains Mono',monospace;font-size:.66rem;color:#94a3b8;letter-spacing:1px;text-transform:uppercase}
+.cd{display:flex;gap:5px}.cd i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.cd i:nth-child(1){background:#ff5f57}.cd i:nth-child(2){background:#febc2e}.cd i:nth-child(3){background:#28c840}
+pre{padding:1rem 1.2rem;overflow-x:hidden;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.8;color:#e2e8f0;margin:0;white-space:pre-wrap;word-break:break-all;tab-size:4}
+.cm{color:#94a3b8;font-style:italic}.kw{color:var(--pu)}.st{color:var(--gn)}.fn{color:var(--cy)}.nb{color:var(--or)}.bi{color:var(--yl)}.op{color:var(--pk)}
+.cbox{background:rgba(147,51,234,.08);border-left:3px solid var(--pu);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1rem 0}
+.cbox h4{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--pu);letter-spacing:1px;text-transform:uppercase;margin-bottom:.35rem}
+.cbox p{color:var(--t2);font-size:.92rem}
+.wbox{background:rgba(217,119,6,.08);border-left:3px solid var(--or);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1rem 0}
+.wbox h4{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--or);letter-spacing:1px;text-transform:uppercase;margin-bottom:.35rem}
+.wbox p{color:var(--t2);font-size:.92rem}
+.tbox{background:rgba(8,145,178,.08);border-left:3px solid var(--cy);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1rem 0}
+.tbox h4{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--cy);letter-spacing:1px;text-transform:uppercase;margin-bottom:.35rem}
+.tbox p{color:var(--t2);font-size:.92rem}
+.pp{display:flex;align-items:center;gap:.35rem;flex-wrap:nowrap;margin:.6rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem}
+.pp .s{padding:.38rem .8rem;background:var(--card);border:1px solid var(--bdr);border-radius:6px;color:var(--ag);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.8rem 0}
+th{background:rgba(237,20,91,.08);color:var(--pk);padding:.6rem .8rem;text-align:left;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:1px;text-transform:uppercase}
+td{padding:.6rem .8rem;border-bottom:1px solid var(--bdr);color:var(--t2)}
+tr:last-child td{border-bottom:none}
+.ft{text-align:center;padding:3rem 2rem;border-top:1px solid var(--bdr);color:var(--t3);font-size:.85rem}
+@media(max-width:768px){.cc{padding:1rem}.tp{padding:1.2rem}pre{padding:.8rem;font-size:.74rem}.toc-inner{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-label">Ficha do Professor · 2º Semestre</div>
+  <h1>Aula 01 — O que é IA? Da ficção à realidade<br>Exercícios Práticos</h1>
+  <p class="sub">Guia completo: atividade em dupla com objetivo, passo a passo, pontos de atenção e sugestão de discussão. Aula sem código.</p>
+  <div class="info"><span>👨‍🏫 Prof. Jorge Luiz Gomes</span><span>🎓 FIAP · Ciência da Computação</span><span>📅 Módulo 1 — Fundamentos de IA</span><span>⏱️ 1h40min (100 min)</span></div>
+</section>
+<nav class="toc"><div class="toc-inner"><a href="#crono">Cronograma</a><a href="#ex1">At1</a></div></nav>
+<main class="cc">
+<section class="bl c--pk" id="crono">
+  <div class="bh"><span class="bn">CRONOGRAMA</span><h2 class="bt">Planejamento da Aula</h2></div>
+  <p class="btag">Distribuição sugerida dos 100 minutos entre os exercícios.</p>
+  <div class="tp"><table><thead><tr><th>Tempo</th><th>Exercício</th><th>Tipo</th><th>Dinâmica</th></tr></thead>
+  <tbody><tr><td>00-10</td><td>Abertura — o que é IA na ficção vs. na realidade</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr><tr><td>10-35</td><td>Teoria — mapa de IA/ML/DL/IA Generativa (slide 6)</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr><tr><td>35-50</td><td>Demo — exemplos de cada camada do mapa</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr><tr><td>50-65</td><td>Atividade 1 — Mapeando a IA no seu dia a dia</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Dupla</td></tr><tr><td>65-100</td><td>Síntese + apresentação de 2-3 duplas + preview Aula 02</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Turma</td></tr></tbody></table></div>
+  <div class="cbox"><h4>⏱️ Turma Compacta — 1h</h4><p>Focar no mapa de IA (Teoria) + Atividade 1. A apresentação de duplas pode ficar reduzida a 1-2 exemplos.</p></div>
+</section>
+<section class="bl c--cy" id="ex1">
+  <div class="bh"><span class="bn">ATIVIDADE 01</span><h2 class="bt">Mapeando a IA no seu dia a dia</h2></div>
+  <p class="btag">Discussão em dupla · sem computador · ★ ★ ★</p>
+  <div class="tp"><h3>🎯 Objetivo Pedagógico</h3><p>Explicar a diferença entre IA, ML, Deep Learning e IA Generativa; descrever em uma frase como um LLM gera texto; justificar por que o mesmo prompt produz respostas diferentes em modelos diferentes.</p></div>
+  <div class="tp"><h3>🧩 Conceitos Trabalhados</h3><p><span style="background:rgba(22,163,74,.1);color:var(--gn);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🤖 Mapa de IA/ML/DL/IA Generativa</span><span style="background:rgba(22,163,74,.1);color:var(--gn);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🤖 Camadas de abstração</span><span style="background:rgba(22,163,74,.1);color:var(--gn);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🤖 Risco e impacto de sistemas de IA</span></p></div>
+  <div class="tp"><h3>⚙️ Preparação Prévia</h3><p>Nenhuma — atividade em papel/caderno, sem computador.</p></div>
+  <div class="tp"><h3>📋 Passo a Passo</h3><div class="pp"><span class="s">1</span><span style="color:var(--t2);font-size:.9rem"><strong>Duplas listam 5 ferramentas usadas nas últimas 24h</strong> — Qualquer categoria: mensageiro, mapas, streaming, banco, delivery, teclado do celular.</span></div><div class="pp"><span class="s">2</span><span style="color:var(--t2);font-size:.9rem"><strong>Classificar cada uma no mapa do slide 6</strong> — IA sem aprendizado, ML clássico, Deep Learning ou IA Generativa — pode ter mais de uma camada.</span></div><div class="pp"><span class="s">3</span><span style="color:var(--t2);font-size:.9rem"><strong>Escolher 1 e descrever o mecanismo em 2 frases</strong> — O que entra, o que sai, o que o sistema precisa ter aprendido. Não precisa estar certo — precisa ser específico.</span></div><div class="pp"><span class="s">4</span><span style="color:var(--t2);font-size:.9rem"><strong>Apontar 1 risco concreto</strong> — A falha (o quê), quem é afetado (quem), e se a pessoa teria como perceber o erro (visibilidade) — este último costuma ser o mais desconfortável.</span></div><div class="pp"><span class="s">5</span><span style="color:var(--t2);font-size:.9rem"><strong>Formular 1 pergunta para o time que construiu a ferramenta</strong> — Guardar — será retomada na Aula 03 (ética/LGPD).</span></div></div>
+  
+  <div class="tbox"><h4>💡 Dica para conduzir</h4><p>Não existe resposta errada aqui — o exercício é de raciocínio, não de conhecimento técnico. O único jeito de fazer errado é responder de forma genérica ("usa IA", "pode dar problema"). Cobrar especificidade nas rodadas de apresentação.</p></div>
+  <div class="wbox"><h4>⚠️ Erros Comuns / Pontos de Atenção</h4><p>Duplas tendem a responder de forma genérica no item de risco — cobrar a resposta específica (o quê/quem/visibilidade) evita respostas vagas do tipo 'pode dar errado'.</p></div>
+  <div class="cbox"><h4>💬 Sugestão de Discussão</h4><p><em>Guardem a pergunta formulada no item 5 — ela volta na Aula 03, quando discutirmos ética, viés e LGPD com mais profundidade técnica.</em></p></div>
+</section>
+</main>
+<footer class="ft"><p>FIAP · Prompt Engineering and Artificial Intelligence · 2026 · 2º Semestre</p><p>Prof. Jorge Luiz Gomes · Todos os direitos reservados</p></footer>
+</body>
+</html>

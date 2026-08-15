@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha do Professor — Exercícios 2Sem Aula 10 | FIAP 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f6fa;--card:#ffffff;--code:#1e293b;--bdr:#e2e4ec;--cy:#0891b2;--gn:#16a34a;--pu:#9333ea;--or:#d97706;--pk:#db2777;--yl:#ca8a04;--rd:#dc2626;--bl:#2563eb;--tl:#0d9488;--ag:#f472b6;--t1:#1a1b2f;--t2:#4e4e68;--t3:#6b6b80}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);line-height:1.75;font-size:17px;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--ag);border-radius:3px}
+.hero{min-height:60vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:3rem 2rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 700px 450px at 20% 25%,rgba(244,114,182,.09),transparent),radial-gradient(ellipse 600px 400px at 80% 75%,rgba(147,51,234,.05),transparent),radial-gradient(ellipse 500px 350px at 50% 50%,rgba(8,145,178,.08),transparent);pointer-events:none}
+.hero-label{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:6px;text-transform:uppercase;color:var(--ag);margin-bottom:1.5rem;opacity:.7}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;line-height:1.1;margin-bottom:1rem;background:linear-gradient(135deg,var(--ag),var(--pu),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero .sub{font-family:'Crimson Pro',serif;font-size:clamp(1rem,2vw,1.2rem);font-style:italic;color:var(--t2);max-width:700px;margin-bottom:1.5rem}
+.hero .info{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+.hero .info span{font-family:'JetBrains Mono',monospace;font-size:.72rem;background:var(--card);border:1px solid var(--bdr);padding:.3rem .7rem;border-radius:6px;color:var(--t3)}
+nav.toc{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.94);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);padding:.65rem 1rem;overflow-x:auto}
+.toc-inner{display:flex;gap:.15rem;max-width:1100px;margin:0 auto;justify-content:center;flex-wrap:nowrap}
+.toc a{font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--t3);text-decoration:none;padding:.3rem .45rem;border-radius:5px;white-space:nowrap;transition:all .2s}
+.toc a:hover{color:var(--ag);background:rgba(219,39,119,.1)}
+.cc{max-width:1060px;margin:0 auto;padding:2rem 1.5rem 6rem}
+.bl{margin-bottom:4rem;scroll-margin-top:58px}
+.bh{display:flex;align-items:center;gap:1rem;margin-bottom:.5rem}
+.bn{font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:2px;padding:.22rem .55rem;border-radius:4px;white-space:nowrap}
+.bt{font-size:clamp(1.2rem,2.5vw,1.7rem);font-weight:800;line-height:1.2}
+.btag{font-family:'Crimson Pro',serif;font-style:italic;font-size:1rem;color:var(--t2);margin-bottom:1.5rem;padding-left:.5rem;border-left:3px solid var(--t3)}
+.c--cy .bn{background:rgba(8,145,178,.12);color:var(--cy)}.c--cy .bt{color:var(--cy)}
+.c--gn .bn{background:rgba(22,163,74,.12);color:var(--gn)}.c--gn .bt{color:var(--gn)}
+.c--pu .bn{background:rgba(147,51,234,.12);color:var(--pu)}.c--pu .bt{color:var(--pu)}
+.c--or .bn{background:rgba(217,119,6,.12);color:var(--or)}.c--or .bt{color:var(--or)}
+.c--pk .bn{background:rgba(219,39,119,.12);color:var(--pk)}.c--pk .bt{color:var(--pk)}
+.c--yl .bn{background:rgba(202,138,4,.12);color:var(--yl)}.c--yl .bt{color:var(--yl)}
+.c--rd .bn{background:rgba(220,38,38,.12);color:var(--rd)}.c--rd .bt{color:var(--rd)}
+.c--bl .bn{background:rgba(37,99,235,.12);color:var(--bl)}.c--bl .bt{color:var(--bl)}
+.c--tl .bn{background:rgba(13,148,136,.12);color:var(--tl)}.c--tl .bt{color:var(--tl)}
+.c--ag .bn{background:rgba(244,114,182,.1);color:var(--ag)}.c--ag .bt{color:var(--ag)}
+.tp{background:var(--card);border:1px solid var(--bdr);border-radius:12px;padding:1.6rem;margin-bottom:1.2rem;transition:border-color .3s}
+.tp:hover{border-color:rgba(219,39,119,.25)}
+.tp h3{font-family:'JetBrains Mono',monospace;font-size:.9rem;font-weight:600;margin-bottom:.8rem}
+.tp p{color:var(--t2);font-size:.92rem;line-height:1.8;margin-bottom:.6rem}
+.tp p:last-child{margin-bottom:0}
+.cb{background:var(--code);border:1px solid #334155;border-radius:10px;margin:1rem 0;overflow:hidden}
+.ch{display:flex;justify-content:space-between;align-items:center;padding:.5rem .85rem;background:#0f172a;border-bottom:1px solid #334155}
+.ch span{font-family:'JetBrains Mono',monospace;font-size:.66rem;color:#94a3b8;letter-spacing:1px;text-transform:uppercase}
+.cd{display:flex;gap:5px}.cd i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.cd i:nth-child(1){background:#ff5f57}.cd i:nth-child(2){background:#febc2e}.cd i:nth-child(3){background:#28c840}
+pre{padding:1rem 1.2rem;overflow-x:hidden;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.8;color:#e2e8f0;margin:0;white-space:pre-wrap;word-break:break-all;tab-size:4}
+.cm{color:#94a3b8;font-style:italic}.kw{color:var(--pu)}.st{color:var(--gn)}.fn{color:var(--cy)}.nb{color:var(--or)}.bi{color:var(--yl)}.op{color:var(--pk)}
+.cbox{background:rgba(147,51,234,.08);border-left:3px solid var(--pu);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1rem 0}
+.cbox h4{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--pu);letter-spacing:1px;text-transform:uppercase;margin-bottom:.35rem}
+.cbox p{color:var(--t2);font-size:.92rem}
+.wbox{background:rgba(217,119,6,.08);border-left:3px solid var(--or);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1rem 0}
+.wbox h4{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--or);letter-spacing:1px;text-transform:uppercase;margin-bottom:.35rem}
+.wbox p{color:var(--t2);font-size:.92rem}
+.tbox{background:rgba(8,145,178,.08);border-left:3px solid var(--cy);border-radius:0 8px 8px 0;padding:1rem 1.2rem;margin:1rem 0}
+.tbox h4{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--cy);letter-spacing:1px;text-transform:uppercase;margin-bottom:.35rem}
+.tbox p{color:var(--t2);font-size:.92rem}
+.pp{display:flex;align-items:center;gap:.35rem;flex-wrap:nowrap;margin:.6rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem}
+.pp .s{padding:.38rem .8rem;background:var(--card);border:1px solid var(--bdr);border-radius:6px;color:var(--ag);font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:.85rem;margin:.8rem 0}
+th{background:rgba(237,20,91,.08);color:var(--pk);padding:.6rem .8rem;text-align:left;font-family:'JetBrains Mono',monospace;font-size:.68rem;letter-spacing:1px;text-transform:uppercase}
+td{padding:.6rem .8rem;border-bottom:1px solid var(--bdr);color:var(--t2)}
+tr:last-child td{border-bottom:none}
+.ft{text-align:center;padding:3rem 2rem;border-top:1px solid var(--bdr);color:var(--t3);font-size:.85rem}
+@media(max-width:768px){.cc{padding:1rem}.tp{padding:1.2rem}pre{padding:.8rem;font-size:.74rem}.toc-inner{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-label">Ficha do Professor · 2º Semestre</div>
+  <h1>Aula 10 — Prompts com Templates e Variáveis<br>Exercícios Práticos</h1>
+  <p class="sub">Guia completo: atividade individual com objetivo, passo a passo, código no Colab, gabarito e sugestão de discussão.</p>
+  <div class="info"><span>👨‍🏫 Prof. Jorge Luiz Gomes</span><span>🎓 FIAP · Ciência da Computação</span><span>📅 Módulo 3 — Python para IA</span><span>⏱️ 1h40min (100 min)</span></div>
+</section>
+<nav class="toc"><div class="toc-inner"><a href="#crono">Cronograma</a><a href="#ex1">At1</a></div></nav>
+<main class="cc">
+<section class="bl c--pk" id="crono">
+  <div class="bh"><span class="bn">CRONOGRAMA</span><h2 class="bt">Planejamento da Aula</h2></div>
+  <p class="btag">Distribuição sugerida dos 100 minutos entre os exercícios.</p>
+  <div class="tp"><table><thead><tr><th>Tempo</th><th>Exercício</th><th>Tipo</th><th>Dinâmica</th></tr></thead>
+  <tbody><tr><td>00-10</td><td>Abertura — por que templates em vez de f-strings soltas</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr><tr><td>10-30</td><td>Teoria — parâmetros com valor padrão, f-string avançada</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr><tr><td>30-40</td><td>Demo — montar_prompt() reutilizada para 3 casos diferentes</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr><tr><td>40-78</td><td>Atividade 1 — Construir e testar uma fábrica de prompts</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Individual</td></tr><tr><td>78-90</td><td>Comparação de descrições geradas entre alunos</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Turma</td></tr><tr><td>90-100</td><td>Síntese + preview Aula 11 (CKP03 — integração final)</td><td><span style="background:rgba(237,20,91,.1);color:#ED145B;padding:2px 8px;border-radius:10px;font-size:.7rem;font-weight:600">Obrigatório</span></td><td>Professor</td></tr></tbody></table></div>
+  <div class="cbox"><h4>⏱️ Turma Compacta — 1h</h4><p>Focar na Demo + Atividade 1, passos 1-3. O desafio de template condicional (passo 4) pode ficar como lição de casa — é o mais avançado da aula.</p></div>
+</section>
+<section class="bl c--gn" id="ex1">
+  <div class="bh"><span class="bn">ATIVIDADE 01</span><h2 class="bt">Construir e Testar uma Fábrica de Prompts</h2></div>
+  <p class="btag">Individual · 28 minutos · Google Colab · ★ ★ ★ · 50% de lacunas</p>
+  <div class="tp"><h3>🎯 Objetivo Pedagógico</h3><p>Construir a função montar_prompt() que recebe variáveis e retorna prompts consistentes, combinando com chamar_llm() e iniciar_chat() das aulas anteriores. Terceira e última peça do CKP03.</p></div>
+  <div class="tp"><h3>🧩 Conceitos Trabalhados</h3><p><span style="background:rgba(37,99,235,.1);color:var(--bl);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🐍 Parâmetros com valor padrão</span><span style="background:rgba(37,99,235,.1);color:var(--bl);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🐍 f-string com múltiplas variáveis</span><span style="background:rgba(37,99,235,.1);color:var(--bl);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🐍 Loop sobre lista de dicts</span><span style="background:rgba(22,163,74,.1);color:var(--gn);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🤖 Templates de prompt com variáveis</span><span style="background:rgba(22,163,74,.1);color:var(--gn);padding:3px 10px;border-radius:15px;font-size:.72rem;font-weight:600;margin:2px">🤖 Consistência de formato entre chamadas</span></p></div>
+  <div class="tp"><h3>⚙️ Preparação Prévia</h3><p>Reaproveita chamar_llm() da Aula 08 (copiar células 1 e 2).</p></div>
+  <div class="tp"><h3>📋 Passo a Passo</h3><div class="pp"><span class="s">1</span><span style="color:var(--t2);font-size:.9rem"><strong>Completar as 4 lacunas</strong> — 2 parâmetros com padrão (Lacuna 1), corpo do template (Lacuna 2), valores dos 2 produtos (Lacuna 3), chamadas a montar_prompt() e chamar_llm() (Lacuna 4).</span></div><div class="pp"><span class="s">2</span><span style="color:var(--t2);font-size:.9rem"><strong>Testar sem o LLM primeiro</strong> — Antes de chamar chamar_llm(), fazer print(prompt) para conferir o prompt gerado — evita gastar tokens com erro de template.</span></div><div class="pp"><span class="s">3</span><span style="color:var(--t2);font-size:.9rem"><strong>Executar e observar a diferença</strong> — Os 2 produtos devem gerar descrições com o mesmo formato mas conteúdo distinto — a estrutura do template garante isso.</span></div><div class="pp"><span class="s">4</span><span style="color:var(--t2);font-size:.9rem"><strong>Desafio — template condicional</strong> — Adicionar parâmetro incluir_preco=False e usar expressão ternária no template para incluir ou não uma frase, dependendo do valor.</span></div></div>
+  <div class="tbox"><h4>✅ Gabarito</h4><p><div style="background:rgba(22,163,74,.08);border-radius:6px;padding:.6rem 1rem"><strong>Lacuna 1:</strong> tom="persuasivo", max_palavras=60<br><strong>Lacuna 2:</strong> f"""Você é redator de e-commerce. Escreva uma descrição {tom} do produto {produto} (categoria: {categoria}) para {publico_alvo}. Máximo {max_palavras} palavras. Em português."""<br><strong>Lacuna 4:</strong> montar_prompt(**p) e chamar_llm(prompt)</div></p></div>
+  <div class="tp"><h3>💻 Código Completo no Colab</h3><p>Código que os alunos executarão no Google Colab. Narre cada bloco explicando o propósito de cada trecho.</p><div class="cb"><div class="ch"><div class="cd"><i></i><i></i><i></i></div><span>Aula10_lab.py · Google Colab</span></div><pre><span class="cm"># Setup + chamar_llm() da Aula 08 (copiar celulas 1 e 2)</span>
+
+<span class="cm"># TAREFA: criar um gerador de DESCRICOES DE PRODUTO</span>
+<span class="cm"># para um e-commerce ficticio</span>
+
+<span class="kw">def</span> montar_prompt(
+    produto,                    <span class="cm"># nome do produto</span>
+    categoria,                  <span class="cm"># categoria (ex: eletronicos, moda)</span>
+    publico_alvo,               <span class="cm"># quem vai comprar</span>
+    <span class="cm"># 👉 LACUNA 1: adicione 2 parametros com valores padrao</span>
+    <span class="cm"># sugestao: tom=&quot;persuasivo&quot; e max_palavras=60</span>
+    ___=___,
+    ___=___,
+):
+    <span class="st">&quot;&quot;&quot;Monta prompt para gerar descricao de produto.&quot;&quot;&quot;</span>
+    <span class="kw">return</span> <span class="st">f&quot;&quot;&quot;
+    # 👉 LACUNA 2: escreva o template com os 5 parametros
+    # Inclua: quem e o assistente, o que gerar, para quem,
+    # qual tom e qual limite de palavras
+    ___
+    &quot;&quot;&quot;</span>
+
+<span class="cm"># -- Testar com 3 produtos -----------------------------------</span>
+produtos = [
+    {
+        <span class="st">&quot;produto&quot;</span>: ___,       <span class="cm"># 👉 LACUNA 3: nome de um produto</span>
+        <span class="st">&quot;categoria&quot;</span>: ___,    <span class="cm"># 👉 LACUNA 3: categoria</span>
+        <span class="st">&quot;publico_alvo&quot;</span>: ___  <span class="cm"># 👉 LACUNA 3: publico-alvo</span>
+    },
+    {
+        <span class="st">&quot;produto&quot;</span>: ___,
+        <span class="st">&quot;categoria&quot;</span>: ___,
+        <span class="st">&quot;publico_alvo&quot;</span>: ___
+    },
+]
+
+<span class="kw">for</span> p <span class="kw">in</span> produtos:
+    <span class="cm"># 👉 LACUNA 4: monte o prompt e chame o LLM</span>
+    prompt = ___
+    descricao = ___
+    <span class="fn">print</span>(<span class="st">f&quot;\n-- {p[&#x27;produto&#x27;]} --\n{descricao}&quot;</span>)</pre></div></div>
+  <div class="wbox"><h4>⚠️ Erros Comuns / Pontos de Atenção</h4><p>Esquecer de testar o prompt com print() antes de chamar o LLM — erros de template (chaves erradas, parâmetro faltando) só aparecem como texto malformado na resposta, difícil de debugar sem ver o prompt gerado.</p></div>
+  <div class="cbox"><h4>💬 Sugestão de Discussão</h4><p><em>Depois desta aula, vocês têm as 3 peças completas: chamar_llm() (Aula 08), iniciar_chat() (Aula 09) e montar_prompt() (hoje). A Aula 11 é 100% integração — sem conceito novo — só combinar essas 3 peças no chatbot do CKP03.</em></p></div>
+</section>
+</main>
+<footer class="ft"><p>FIAP · Prompt Engineering and Artificial Intelligence · 2026 · 2º Semestre</p><p>Prof. Jorge Luiz Gomes · Todos os direitos reservados</p></footer>
+</body>
+</html>

@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 04 — Anatomia do prompt + primeiro código Python</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  :root{--fiap-pink:#ED145B;--fiap-dark:#f5f6fa;--fiap-surface:#ffffff;--fiap-surface2:#f0f1f5;--fiap-border:#e2e4ec;--fiap-text:#1a1b2f;--fiap-muted:#4e4e68;--fiap-white:#1a1b2f;--fiap-green:#29AF8C;--fiap-blue:#3D9CCC;--fiap-purple:#7C60C6;--fiap-orange:#D58C2E;--fiap-red:#C9492C;--code-bg:#1e293b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',-apple-system,sans-serif;background:var(--fiap-dark);color:var(--fiap-text);line-height:1.7;font-size:15px}
+  .slide{width:100%;min-height:100vh;padding:60px 80px;position:relative;border-bottom:1px solid var(--fiap-border);display:flex;flex-direction:column;overflow:hidden}
+  .slide::before{content:'';position:absolute;top:0;right:0;width:400px;height:400px;background:radial-gradient(circle,rgba(237,20,91,.04) 0%,transparent 70%);pointer-events:none}
+  .slide-number{position:absolute;bottom:30px;right:40px;font-size:12px;color:var(--fiap-muted);font-weight:500;letter-spacing:1px}
+  .slide-footer{position:absolute;bottom:30px;left:80px;font-size:11px;color:rgba(78,78,104,.6)}
+  .slide-cover{background:linear-gradient(135deg,#f5f6fa 0%,#ecfdf5 50%,#eff6ff 100%);justify-content:center;align-items:center;text-align:center;padding:60px}
+  .cover-course{font-size:13px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:20px}
+  .cover-title{font-size:44px;font-weight:800;color:var(--fiap-white);line-height:1.15;margin-bottom:16px;max-width:800px}
+  .cover-subtitle{font-size:18px;color:var(--fiap-muted);margin-bottom:40px}
+  .cover-meta{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+  .cover-meta-item{background:rgba(237,20,91,.1);border:1px solid rgba(237,20,91,.25);padding:8px 18px;border-radius:8px;font-size:13px;color:var(--fiap-text);font-weight:500}
+  .slide-section{background:linear-gradient(135deg,#f5f6fa 0%,#ecfdf5 100%);justify-content:center;align-items:flex-start;padding:80px 100px}
+  .section-number{font-size:72px;font-weight:900;color:var(--fiap-pink);opacity:.25;line-height:1;margin-bottom:10px}
+  .section-title{font-size:38px;font-weight:800;color:var(--fiap-white);line-height:1.2;margin-bottom:16px}
+  .section-desc{font-size:16px;color:var(--fiap-muted);max-width:600px}
+  .slide-content{background:var(--fiap-dark);padding-top:50px}
+  .slide-content h2{font-size:28px;font-weight:800;color:var(--fiap-white);margin-bottom:32px;padding-bottom:12px;border-bottom:2px solid var(--fiap-pink);display:inline-block}
+  .slide-content h3{font-size:20px;font-weight:700;color:var(--fiap-pink);margin:28px 0 16px}
+  .slide-content p{color:var(--fiap-text);margin-bottom:16px;max-width:950px}
+  .slide-content strong{color:var(--fiap-white)}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin:24px 0}
+  .card{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:24px}
+  .card-icon{font-size:28px;margin-bottom:12px}
+  .card-title{font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px}
+  .card-body{font-size:13px;color:var(--fiap-muted);line-height:1.6}
+  .data-table{width:100%;border-collapse:collapse;margin:20px 0;background:var(--fiap-surface);border-radius:12px;overflow:hidden;border:1px solid var(--fiap-border)}
+  .data-table th{background:var(--fiap-surface2);padding:12px 18px;text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--fiap-pink);border-bottom:1px solid var(--fiap-border)}
+  .data-table td{padding:12px 18px;font-size:13px;color:var(--fiap-text);border-bottom:1px solid rgba(0,0,0,.06);vertical-align:top}
+  .data-table tr:last-child td{border-bottom:none}
+  .callout{background:var(--fiap-surface);border-left:4px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:20px 24px;margin:24px 0}
+  .callout-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--fiap-pink);margin-bottom:8px}
+  .callout-body{font-size:14px;color:var(--fiap-muted);line-height:1.6}
+  .callout-green{border-left-color:var(--fiap-green)}.callout-green .callout-title{color:var(--fiap-green)}
+  .callout-blue{border-left-color:var(--fiap-blue)}.callout-blue .callout-title{color:var(--fiap-blue)}
+  .callout-purple{border-left-color:var(--fiap-purple)}.callout-purple .callout-title{color:var(--fiap-purple)}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:700}
+  .badge-pink{background:rgba(237,20,91,.12);color:var(--fiap-pink)}
+  .badge-green{background:rgba(41,175,140,.12);color:var(--fiap-green)}
+  .badge-blue{background:rgba(61,156,204,.12);color:var(--fiap-blue)}
+  .badge-purple{background:rgba(124,96,198,.12);color:var(--fiap-purple)}
+  .exercise{background:linear-gradient(135deg,rgba(41,175,140,.06) 0%,rgba(61,156,204,.06) 100%);border:1px solid rgba(41,175,140,.2);border-radius:14px;padding:28px;margin:28px 0}
+  .exercise-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .exercise-icon{width:40px;height:40px;background:rgba(41,175,140,.12);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .exercise-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-green)}
+  .exercise-title{font-size:17px;font-weight:700;color:var(--fiap-white)}
+  .exercise-steps{margin:16px 0;padding-left:20px}
+  .exercise-steps li{color:var(--fiap-text);font-size:14px;margin-bottom:8px;line-height:1.6}
+  .exercise-hint{background:rgba(61,156,204,.08);border:1px solid rgba(61,156,204,.2);border-radius:8px;padding:12px 16px;margin-top:16px;font-size:13px;color:var(--fiap-blue)}
+  .difficulty{display:inline-flex;gap:2px;margin-left:8px}
+  .difficulty .star{color:var(--fiap-orange);font-size:14px}
+  .difficulty .star.empty{opacity:.25}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin:20px 0}
+  .agenda-item{display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;margin-bottom:10px}
+  .agenda-num{width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:var(--fiap-pink);flex-shrink:0}
+  .agenda-text{font-size:14px;font-weight:600;color:var(--fiap-white);flex:1}
+  .agenda-time{font-size:12px;font-weight:600;color:var(--fiap-muted);background:var(--fiap-surface2);padding:4px 10px;border-radius:6px}
+  .slide-closing{background:linear-gradient(135deg,#f5f6fa 0%,#f3e8ff 50%,#ecfdf5 100%);justify-content:center;align-items:center;text-align:center}
+  .next-class{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:14px;padding:32px 48px;margin-top:40px;text-align:left;max-width:600px}
+  .next-label{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--fiap-pink);margin-bottom:8px}
+  .next-title{font-size:18px;font-weight:700;color:var(--fiap-white);margin-bottom:6px}
+  .next-desc{font-size:13px;color:var(--fiap-muted)}
+  .ref-list{margin:16px 0}
+  .ref-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid rgba(0,0,0,.06)}
+  .ref-tag{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap;margin-top:2px;flex-shrink:0}
+  .ref-tag-book{background:rgba(108,99,255,.15);color:#a89cff}
+  .ref-tag-doc{background:rgba(255,209,102,.12);color:#ffd166}
+  .ref-tag-paper{background:rgba(255,107,107,.12);color:#ff9a9a}
+  .ref-text{font-size:12px;color:var(--fiap-muted);line-height:1.5}
+  /* code block */
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;margin:20px 0;overflow:visible;font-family:'JetBrains Mono',monospace}
+  .code-header{background:#0f172a;padding:10px 18px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #334155}
+  .code-dot{width:10px;height:10px;border-radius:50%}
+  .code-dot.red{background:#ff5f57}
+  .code-dot.yellow{background:#febc2e}
+  .code-dot.green{background:#28c840}
+  .code-filename{font-size:12px;color:#94a3b8;margin-left:8px;font-family:'JetBrains Mono',monospace}
+  .code-body{padding:20px;font-size:13px;line-height:1.9}
+  .code-body pre{margin:0;white-space:pre;overflow-x:auto}
+  /* syntax colors */
+  .kw{color:#c678dd}
+  .fn{color:#61afef}
+  .st{color:#98c379}
+  .cm{color:#94a3b8;font-style:italic}
+  .nb{color:#e5c07b}
+  .num{color:#d19a66}
+  .op{color:#56b6c2}
+  .tx{color:#abb2bf}
+  .va{color:#e06c75}
+  /* lacuna */
+  .gap{background:rgba(237,20,91,.15);border:1px dashed rgba(237,20,91,.5);border-radius:4px;padding:0 6px;color:#ED145B;font-style:italic}
+  /* prompt comparison */
+  .prompt-compare{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+  .prompt-version{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;overflow:hidden}
+  .prompt-version-label{padding:8px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--fiap-border)}
+  .prompt-version-body{padding:14px 16px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--fiap-muted);line-height:1.7}
+  .prompt-version-result{padding:10px 16px;font-size:12px;color:var(--fiap-muted);border-top:1px solid var(--fiap-border);background:var(--fiap-surface2)}
+  /* 4 componentes */
+  .comp-row{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--fiap-border);align-items:start}
+  .comp-row:last-child{border-bottom:none}
+  .comp-tag{display:inline-flex;align-items:center;justify-content:center;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;text-align:center}
+  .comp-body{font-size:13px;color:var(--fiap-muted);line-height:1.6}
+  .comp-body strong{color:var(--fiap-white)}
+  @media print{.slide{page-break-after:always;min-height:auto;padding:30px 40px}}
+/* ===== SCROLL-SUAVE-2026 ===== */
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{scroll-behavior:smooth}
+  .slide{scroll-margin-top:0}
+  @media (prefers-reduced-motion:reduce){html,body{scroll-behavior:auto}}
+
+/* ===== ADDON-FIAP-2026 ===== */
+  .glossary{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px;margin:20px 0}
+  .gl-item{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:14px 18px}
+  .gl-item.gl-blue{border-left-color:var(--fiap-blue)}
+  .gl-item.gl-green{border-left-color:var(--fiap-green)}
+  .gl-item.gl-purple{border-left-color:var(--fiap-purple)}
+  .gl-item.gl-orange{border-left-color:var(--fiap-orange)}
+  .gl-term{font-size:14px;font-weight:800;color:var(--fiap-white);margin-bottom:4px}
+  .gl-pron{font-size:11px;font-weight:500;color:var(--fiap-muted);font-style:italic;margin-left:6px}
+  .gl-def{font-size:12.5px;color:var(--fiap-muted);line-height:1.55}
+  .gl-analogy{font-size:12px;color:var(--fiap-blue);margin-top:6px;padding-top:6px;border-top:1px dashed var(--fiap-border)}
+  .code-block{background:var(--code-bg);border:1px solid #334155;border-radius:10px;overflow:visible;margin:18px 0}
+  .code-header{background:#0f172a;padding:8px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#94a3b8;border-bottom:1px solid #334155;display:flex;justify-content:space-between;gap:12px}
+  .code-body{padding:16px 18px;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.65;color:#e2e8f0;overflow-x:auto;white-space:pre}
+  .code-body .kw{color:#c678dd}.code-body .fn{color:#61afef}.code-body .st{color:#98c379}
+  .code-body .cm{color:#94a3b8;font-style:italic}.code-body .nb{color:#e5c07b}
+  .code-body .num{color:#d19a66}.code-body .op{color:#56b6c2}.code-body .tx{color:#e2e8f0}
+  .diagram{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:20px;margin:20px 0;overflow-x:auto}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}
+  .diagram-cap{font-size:11.5px;color:var(--fiap-muted);text-align:center;margin-top:10px;font-style:italic}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:20px 0}
+  .metric{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px;padding:16px;text-align:center}
+  .metric-val{font-size:26px;font-weight:900;color:var(--fiap-pink);line-height:1}
+  .metric-lbl{font-size:11px;color:var(--fiap-muted);margin-top:6px;line-height:1.4}
+  .prompt-box{border-radius:10px;padding:16px 18px;margin:14px 0;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;line-height:1.6;white-space:pre-wrap}
+  .prompt-good{background:rgba(41,175,140,.07);border:1px solid rgba(41,175,140,.3);color:var(--fiap-text)}
+  .prompt-bad{background:rgba(201,73,44,.07);border:1px solid rgba(201,73,44,.3);color:var(--fiap-text)}
+  .prompt-label{font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px;font-family:'Inter',sans-serif}
+  .prompt-good .prompt-label{color:var(--fiap-green)}.prompt-bad .prompt-label{color:var(--fiap-red)}
+  .three-col{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:20px 0}
+  .callout-orange{border-left-color:var(--fiap-orange)}.callout-orange .callout-title{color:var(--fiap-orange)}
+  .callout-red{border-left-color:var(--fiap-red)}.callout-red .callout-title{color:var(--fiap-red)}
+  .ref-tag-law{background:rgba(41,175,140,.15);color:#1f8f72}
+  .checklist{list-style:none;margin:16px 0}
+  .checklist li{padding:7px 0 7px 28px;position:relative;font-size:13.5px;color:var(--fiap-text)}
+  .checklist li::before{content:'\2713';position:absolute;left:0;color:var(--fiap-green);font-weight:800}
+  .pause{background:rgba(213,140,46,.08);border:1px dashed rgba(213,140,46,.45);border-radius:10px;padding:12px 18px;margin:18px 0;font-size:13px;color:#a8701f;font-weight:600}
+  .kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .kpi{background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--fiap-text)}
+  .data-table td code,.gl-def code,.callout-body code,.slide-content p code{font-family:'JetBrains Mono',monospace;font-size:.9em;background:var(--fiap-surface2);padding:1px 5px;border-radius:4px;color:#b3186a}
+  /* ---- graficos interativos ---- */
+  .chart{background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:18px 20px 14px;margin:20px 0}
+  .chart-title{font-size:13px;font-weight:800;color:var(--fiap-white);margin-bottom:2px}
+  .chart-sub{font-size:11.5px;color:var(--fiap-muted);margin-bottom:12px}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .chart-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chart-key{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--fiap-muted);background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-radius:20px;padding:4px 11px;cursor:pointer;user-select:none;transition:opacity .15s}
+  .chart-key.off{opacity:.35}
+  .chart-key i{width:10px;height:10px;border-radius:3px;display:inline-block}
+  .chart-hint{font-size:11px;color:var(--fiap-muted);font-style:italic;margin-top:10px;text-align:center}
+  .fq-bar,.fq-dot,.fq-seg{cursor:pointer;transition:opacity .15s,transform .15s}
+  .fq-bar:hover,.fq-dot:hover,.fq-seg:hover{opacity:.78}
+  .fq-tip{position:fixed;z-index:9999;pointer-events:none;background:#1a1b2f;color:#fff;font-family:'Inter',sans-serif;font-size:12px;line-height:1.5;padding:9px 13px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.28);max-width:290px;opacity:0;transition:opacity .12s}
+  .fq-tip.on{opacity:1}
+  .fq-tip b{color:#ff7aa8;display:block;margin-bottom:3px;font-size:12.5px}
+  /* ---- diagramas com hotspot clicavel ---- */
+  .diagram [data-info]{cursor:pointer}
+  .diagram [data-info]:hover{filter:brightness(.94)}
+  .diagram-info{margin-top:12px;background:var(--fiap-surface2);border:1px solid var(--fiap-border);border-left:3px solid var(--fiap-pink);border-radius:0 10px 10px 0;padding:12px 16px;font-size:12.5px;color:var(--fiap-muted);line-height:1.6;min-height:52px}
+  .diagram-info b{color:var(--fiap-white);display:block;margin-bottom:3px;font-size:13px}
+  /* ---- slider interativo ---- */
+  .ctrl{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+  .ctrl label{font-size:12px;font-weight:700;color:var(--fiap-text)}
+  .ctrl input[type=range]{flex:1;min-width:180px;accent-color:var(--fiap-pink)}
+  .ctrl output{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--fiap-pink);min-width:44px;text-align:right}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 10px}
+  .tab{font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;border:1px solid var(--fiap-border);background:var(--fiap-surface2);color:var(--fiap-muted);cursor:pointer;user-select:none;transition:all .15s}
+  .tab.on{background:var(--fiap-pink);border-color:var(--fiap-pink);color:#fff}
+  .tab-panel{display:none}
+  .tab-panel.on{display:block}
+
+</style>
+
+<style id="slide-nav-style">
+  html, body { overflow: visible !important; height: auto !important; scroll-behavior: smooth; }
+  .slide { height: auto !important; min-height: 100vh; max-height: none !important; overflow: visible !important; }
+  @media print {
+    .slide { page-break-after: always; min-height: auto; padding: 30px 40px; }
+    .slide-number, .slide-footer { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="slide-viewport">
+
+
+<!-- S01 CAPA -->
+<!-- S01 -->
+<div class="slide slide-cover">
+  <svg width="160" height="40" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="margin-top:40px" class="cover-course">PROMPT ENGINEERING AND ARTIFICIAL INTELLIGENCE</div>
+  <div class="cover-title">Anatomia do prompt<br>+ Primeiro código Python</div>
+  <div class="cover-subtitle">Aula 04/14 — Módulo 2: Técnicas de Prompt</div>
+  <div class="cover-meta">
+    <div class="cover-meta-item">👨‍🏫 Prof. Jorge Luiz Gomes</div>
+    <div class="cover-meta-item">⏱️ 1h40min</div>
+    <div class="cover-meta-item">🐍 Primeiro código da disciplina</div>
+    <div class="cover-meta-item">☁️ Google Colab + Ollama Cloud</div>
+  </div>
+  <div class="slide-number">01 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Agenda da Aula</h2>
+  <div class="agenda-item"><div class="agenda-num">1</div><div class="agenda-text">Revisão do check-in + Glossário de hoje</div><div class="agenda-time">10 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">2</div><div class="agenda-text">Por que um prompt ruim gera resposta ruim — comparativo ao vivo</div><div class="agenda-time">15 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">3</div><div class="agenda-text">Os 4 componentes de um prompt eficaz</div><div class="agenda-time">20 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">4</div><div class="agenda-text">🚀 Demo: configurar Colab + Ollama Cloud + 8 linhas de código</div><div class="agenda-time">25 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">5</div><div class="agenda-text">💻 Lab: Notebook Aluno — completar 3 lacunas</div><div class="agenda-time">20 min</div></div>
+  <div class="agenda-item"><div class="agenda-num">6</div><div class="agenda-text">Síntese + preview da Aula 05</div><div class="agenda-time">10 min</div></div>
+  <div class="callout callout-green" style="margin-top:16px">
+    <div class="callout-title">🎯 O que você vai conseguir fazer ao final desta aula</div>
+    <div class="callout-body">Enviar um prompt para um LLM via código Python e receber a resposta — sem interface gráfica, sem copiar e colar no ChatGPT. <strong>É a primeira vez que você controla o modelo programaticamente.</strong> A partir daqui, tudo que aprender de prompt engineering pode ser automatizado.</div>
+  </div>
+  <div class="slide-number">02 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Glossário da Aula 04</h2>
+  <p>Termos novos que aparecem hoje — definição antes de usar.</p>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr 1fr">
+    <div class="card" style="border-top:3px solid var(--fiap-blue)">
+      <div class="card-icon">📐</div>
+      <div class="card-title">Instrução</div>
+      <div class="card-body">A parte do prompt que diz <strong>o que o modelo deve fazer</strong>. O verbo da tarefa.<br><br><strong>Exemplos:</strong> "Resuma", "Classifique", "Traduza", "Liste", "Escreva", "Explique".<br><br><strong>Analogia:</strong> é como o primeiro verbo de uma receita de bolo — "misture", "asse", "despeje".</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-green)">
+      <div class="card-icon">🔧</div>
+      <div class="card-title">API (Application Programming Interface)</div>
+      <div class="card-body">Uma forma padronizada de dois programas se comunicarem. No nosso caso: seu código Python se comunica com o modelo de IA pela API.<br><br><strong>Analogia:</strong> o cardápio de um restaurante — você pede pelo cardápio, não vai até a cozinha.</div>
+    </div>
+    <div class="card" style="border-top:3px solid var(--fiap-purple)">
+      <div class="card-icon">📦</div>
+      <div class="card-title">Biblioteca (Python)</div>
+      <div class="card-body">Conjunto de funções prontas que você pode importar e usar sem precisar programar do zero.<br><br><strong>Analogia:</strong> comprar pão no mercado em vez de plantar trigo, moer a farinha e assar. A biblioteca já fez o trabalho duro.</div>
+    </div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">🔗 Conexão com as aulas anteriores</div>
+    <div class="callout-body">Na Aula 01 você viu que prompt é a instrução para o modelo. Na Aula 02 aprendeu que o modelo prevê tokens. Hoje você vai <strong>controlar essa previsão via código</strong> — e entender os 4 componentes que tornam um prompt preciso.</div>
+  </div>
+  <div class="slide-number">03 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Resultado do check-in da Aula 03</h2>
+  <p>Você respondeu. O professor leu. Aqui estão os pontos mais mencionados:</p>
+  <div class="callout callout-green">
+    <div class="callout-title">✅ O que ficou mais claro (respostas do check-in)</div>
+    <div class="callout-body">[Professor insere aqui os 2–3 pontos mais citados na pergunta 1 do formulário]<br><br>
+    <em>Exemplos típicos: "a diferença entre token e palavra", "por que o modelo alucina", "o caso Air Canada", "as 3 regras da LGPD"</em></div>
+  </div>
+  <div class="callout callout-orange">
+    <div class="callout-title">⚠️ O que ainda estava confuso (e a resposta)</div>
+    <div class="callout-body">[Professor insere aqui os 2–3 pontos mais citados na pergunta 2 do formulário e responde cada um em 2–3 linhas]<br><br>
+    <em>Exemplos típicos: "temperatura ainda não ficou claro", "não entendi bem a janela de contexto", "como sei se meu dado é sensível pela LGPD"</em></div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">📌 Próximo check-in: Aula 07</div>
+    <div class="callout-body">Mesmas 2 perguntas. Mesmo QR Code. O objetivo é ajustar o ritmo antes da metade do semestre — não só na avaliação institucional ao final.</div>
+  </div>
+  <div class="slide-number">04 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">01</div>
+  <div class="section-title">Por que prompts<br>ruins geram<br>respostas ruins</div>
+  <div class="section-desc">Antes dos 4 componentes: ver ao vivo o que acontece quando o prompt é vago, médio ou bem estruturado.</div>
+  <div class="slide-number">05 / 28</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">02</div>
+  <div class="section-title">Os 4 componentes<br>de um prompt eficaz</div>
+  <div class="section-desc">Instrução · Contexto · Input · Formato. Nem todo prompt precisa dos 4 — mas saber que eles existem te dá controle.</div>
+  <div class="slide-number">06 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Os 4 componentes — visão geral</h2>
+  <div style="background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:12px;padding:24px;margin-bottom:20px">
+    <div class="comp-row">
+      <div><span class="comp-tag" style="background:rgba(237,20,91,.12);color:var(--fiap-pink)">1. Instrução</span></div>
+      <div class="comp-body"><strong>O que fazer.</strong> O verbo da tarefa. É obrigatório em todo prompt útil.<br>
+      <em>Exemplo: "Resuma", "Classifique como positivo/negativo/neutro", "Traduza para português formal"</em></div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-tag" style="background:rgba(61,156,204,.12);color:var(--fiap-blue)">2. Contexto</span></div>
+      <div class="comp-body"><strong>O que o modelo precisa saber para fazer bem.</strong> Background, persona, restrições, audiência.<br>
+      <em>Exemplo: "Você é um especialista em direito tributário. O usuário é um MEI sem formação contábil."</em></div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-tag" style="background:rgba(41,175,140,.12);color:var(--fiap-green)">3. Input</span></div>
+      <div class="comp-body"><strong>O dado ou conteúdo a processar.</strong> O texto, trecho, pergunta ou dado sobre o qual a instrução vai agir.<br>
+      <em>Exemplo: "Texto: [cole aqui o e-mail do cliente]" ou "Pergunta do usuário: {pergunta}"</em></div>
+    </div>
+    <div class="comp-row">
+      <div><span class="comp-tag" style="background:rgba(124,96,198,.12);color:var(--fiap-purple)">4. Formato</span></div>
+      <div class="comp-body"><strong>Como a saída deve ser.</strong> Tamanho, estrutura, tom, idioma, tópicos, JSON, lista.<br>
+      <em>Exemplo: "Responda em tópicos. Máximo 100 palavras. Tom formal. Sem markdown."</em></div>
+    </div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">💡 Regra prática</div>
+    <div class="callout-body">Se o modelo faz escolhas que você não queria, é porque você não especificou esse elemento. <strong>Cada componente ausente é uma decisão que o modelo vai tomar por você.</strong></div>
+  </div>
+  <div class="callout callout-purple" style="margin-top:16px">
+    <div class="callout-title">📖 Fundamentação — As mesmas 4 peças, vindas de um guia diferente</div>
+    <div class="callout-body">Lanham (<em>AI Agents in Action</em>, Manning Publications, 2025) resume as táticas oficiais de "Write Clear Instructions" da OpenAI em seis pontos: perguntas detalhadas, adoção de personas, uso de delimitadores, especificação de passos, fornecimento de exemplos e definição do tamanho da saída. Cada uma cai dentro de um dos 4 componentes acima: pergunta detalhada e especificação de passos reforçam a <strong>Instrução</strong>; personas formam o <strong>Contexto</strong>; delimitadores organizam o <strong>Input</strong>; exemplos (few-shot, que você estuda na Aula 05) e tamanho da saída moldam o <strong>Formato</strong>. Não é coincidência as mesmas peças aparecerem em fontes independentes — o resultado de um LLM depende só do que está no prompt, então todo framework de boas práticas converge para nomear as mesmas lacunas que você precisa preencher.</div>
+  </div>
+  <div class="slide-number">07 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Componente 1 — Instrução: o verbo da tarefa</h2>
+  <p>A instrução define a <strong>ação</strong>. Verbos diferentes produzem resultados completamente diferentes para o mesmo input.</p>
+  <div class="two-col">
+    <div>
+      <h3>Verbos por categoria de tarefa</h3>
+      <table class="data-table" style="margin-top:8px">
+        <thead><tr><th>Categoria</th><th>Verbos úteis</th></tr></thead>
+        <tbody>
+          <tr><td><strong style="color:var(--fiap-blue)">Transformação</strong></td><td>Resuma, traduza, reescreva, simplifique, expanda, formate</td></tr>
+          <tr><td><strong style="color:var(--fiap-green)">Análise</strong></td><td>Classifique, identifique, extraia, avalie, compare, liste</td></tr>
+          <tr><td><strong style="color:var(--fiap-purple)">Geração</strong></td><td>Escreva, crie, gere, sugira, proponha, elabore</td></tr>
+          <tr><td><strong style="color:var(--fiap-orange)">Decisão</strong></td><td>Decida, escolha, priorize, ordene, recomende</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Mesmo input, verbos diferentes</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px">
+          <strong>Input:</strong> <em>"O produto chegou quebrado e o atendimento foi péssimo."</em><br>
+          <strong style="color:var(--fiap-blue)">Resuma:</strong> "Cliente insatisfeito com produto e atendimento."<br>
+          <strong style="color:var(--fiap-green)">Classifique:</strong> "Negativo — produto + atendimento."<br>
+          <strong style="color:var(--fiap-purple)">Reescreva:</strong> "Infelizmente o item chegou danificado e o suporte não foi satisfatório."<br>
+          <strong style="color:var(--fiap-orange)">Extraia:</strong> "Problemas: 1) Produto defeituoso 2) Mau atendimento."
+        </div>
+      </div>
+      <div class="callout callout-purple" style="margin-top:12px">
+        <div class="callout-title">💡 Instrução precisa = menos surpresa</div>
+        <div class="callout-body">Quanto mais específico o verbo, menos liberdade o modelo tem — e menos surpresa você tem. "Resuma em 3 pontos" é melhor que "resuma".</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-number">08 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Componente 2 — Contexto: o que o modelo precisa saber</h2>
+  <p>O contexto inclui tudo que o modelo precisa para calibrar a resposta para <strong>a sua situação específica</strong>.</p>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card" style="border-left:4px solid var(--fiap-blue)">
+      <div class="card-title">Persona / Role</div>
+      <div class="card-body">Quem o modelo deve ser.<br><br>
+      <em>"Você é um médico clínico explicando para um paciente sem formação médica."</em><br><em>"Você é um engenheiro de software sênior revisando código de um júnior."</em><br><br>
+      Muda vocabulário, tom e nível técnico da resposta.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--fiap-green)">
+      <div class="card-title">Audiência</div>
+      <div class="card-body">Para quem a resposta é destinada.<br><br>
+      <em>"O leitor é um executivo sem background técnico."</em><br><em>"O público é um aluno de 15 anos."</em><br><br>
+      Mesmo conteúdo, nível de complexidade completamente diferente.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--fiap-purple)">
+      <div class="card-title">Restrições</div>
+      <div class="card-body">O que o modelo <strong>não</strong> deve fazer.<br><br>
+      <em>"Não mencione concorrentes."</em><br><em>"Não use jargão técnico."</em><br><em>"Não invente informações — diga 'não sei' se não souber."</em><br><br>
+      Guardrails via contexto.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--fiap-orange)">
+      <div class="card-title">Background / Situação</div>
+      <div class="card-body">O que o modelo precisa saber sobre o cenário.<br><br>
+      <em>"A empresa é uma startup de 10 funcionários com orçamento limitado."</em><br><em>"O usuário já tentou reiniciar o computador 3 vezes."</em><br><br>
+      Evita sugestões inadequadas para o contexto real.</div>
+    </div>
+  </div>
+  <div class="slide-number">09 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Componentes 3 e 4 — Input e Formato</h2>
+  <div class="two-col">
+    <div>
+      <h3>Componente 3 — Input: o dado</h3>
+      <p style="font-size:13px">O conteúdo sobre o qual a instrução vai agir. Pode ser texto, dados, perguntas ou variáveis.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Texto direto:</strong><br><em>"Texto: 'O produto chegou quebrado...'"</em></div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Variável (no código):</strong><br><em>f"Texto: {texto_do_usuario}"</em></div>
+        <div style="padding:10px 14px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:8px;font-size:13px;color:var(--fiap-muted)">
+          <strong style="color:var(--fiap-white)">Múltiplos inputs:</strong><br><em>"Nome: {nome}\nIdade: {idade}\nPergunta: {pergunta}"</em></div>
+      </div>
+      <div class="callout callout-green" style="margin-top:12px">
+        <div class="callout-title">💡 Separar input do resto</div>
+        <div class="callout-body">Colocar o input numa seção clara evita que o modelo confunda instrução com dado. Uso de rótulos ("Texto:", "Pergunta:", "Contexto:") ajuda muito.</div>
+      </div>
+    </div>
+    <div>
+      <h3>Componente 4 — Formato: a estrutura da saída</h3>
+      <p style="font-size:13px">Controla como a resposta aparece — sem isso, o modelo decide por conta própria.</p>
+      <table class="data-table" style="margin-top:8px">
+        <thead><tr><th>Elemento</th><th>Exemplo de instrução</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Tamanho</strong></td><td>"Máximo de 100 palavras", "3 parágrafos", "1 frase"</td></tr>
+          <tr><td><strong>Estrutura</strong></td><td>"Em tópicos", "Em prosa", "Em tabela", "Em JSON"</td></tr>
+          <tr><td><strong>Tom</strong></td><td>"Formal", "Informal", "Técnico", "Empático"</td></tr>
+          <tr><td><strong>Idioma</strong></td><td>"Em português brasileiro", "Em inglês americano"</td></tr>
+          <tr><td><strong>Marcação</strong></td><td>"Sem markdown", "Use negrito nos pontos principais"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="slide-number">10 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Exemplo completo — os 4 componentes juntos</h2>
+  <p>Um prompt real de um sistema de análise de feedback de clientes:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div>
+      <span class="code-filename">prompt_analise_feedback.txt</span>
+    </div>
+    <div class="code-body">
+      <pre><span style="color:#94a3b8;font-style:italic"># ── CONTEXTO ────────────────────────────────────────────</span>
+<span style="color:#abb2bf">Você é um analista de experiência do cliente de uma empresa de e-commerce brasileira.
+O feedback abaixo foi deixado por um cliente após a compra.
+Não invente informações que não estão no texto.</span>
+
+<span style="color:#94a3b8;font-style:italic"># ── INSTRUÇÃO ────────────────────────────────────────────</span>
+<span style="color:#abb2bf">Analise o sentimento do feedback e identifique os pontos de melhoria.</span>
+
+<span style="color:#94a3b8;font-style:italic"># ── INPUT ────────────────────────────────────────────────</span>
+<span style="color:#abb2bf">Feedback: "O produto chegou no prazo, mas a embalagem estava amassada
+e o manual veio em espanhol. O atendimento foi rápido quando reclamei."</span>
+
+<span style="color:#94a3b8;font-style:italic"># ── FORMATO ──────────────────────────────────────────────</span>
+<span style="color:#abb2bf">Responda em JSON com os campos:
+- sentimento_geral: "positivo", "negativo" ou "misto"
+- pontos_positivos: lista de strings
+- pontos_negativos: lista de strings
+- prioridade_acao: "alta", "media" ou "baixa"</span></pre>
+    </div>
+  </div>
+  <div class="callout callout-blue">
+    <div class="callout-title">💡 Por que JSON no formato?</div>
+    <div class="callout-body">Ao especificar JSON como formato, o output pode ser lido diretamente por outro programa em Python — é o primeiro passo para automatizar análises. Na Aula 07 você vai explorar isso com mais profundidade.</div>
+  </div>
+  <div class="slide-number">11 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">03</div>
+  <div class="section-title">Primeiro código Python</div>
+  <div class="section-desc">8 linhas. Cada uma explicada antes de digitar. Ao final desta seção, você terá feito sua primeira chamada a um LLM via código.</div>
+  <div class="slide-number">12 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Passo 0 — Configurar Google Colab</h2>
+  <p>Antes de escrever código, vamos abrir o ambiente. O professor faz ao vivo — você acompanha.</p>
+  <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+    <div style="display:flex;gap:16px;align-items:center;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--fiap-pink);flex-shrink:0">1</div>
+      <div style="font-size:14px;color:var(--fiap-text)">Acesse <strong>colab.research.google.com</strong> com sua conta Google. Clique em <strong>"Novo notebook"</strong>.</div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--fiap-pink);flex-shrink:0">2</div>
+      <div style="font-size:14px;color:var(--fiap-text)">Renomeie para <strong>"Aula_04_Primeiro_Codigo.ipynb"</strong> clicando no título "Untitled" no topo.</div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--fiap-pink);flex-shrink:0">3</div>
+      <div style="font-size:14px;color:var(--fiap-text)">No menu <strong>Editar → Configurações do notebook</strong>: selecione "CPU" como tipo de hardware (não precisamos de GPU hoje).</div>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center;padding:14px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="width:32px;height:32px;background:rgba(237,20,91,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--fiap-pink);flex-shrink:0">4</div>
+      <div style="font-size:14px;color:var(--fiap-text)">Clique em <strong>🔑 Secrets</strong> (ícone de chave no painel esquerdo) e adicione o secret <code style="font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(0,0,0,.06);padding:2px 6px;border-radius:3px">OLLAMA_API_KEY</code> com o valor que o professor fornece.</div>
+    </div>
+  </div>
+  <div class="callout callout-orange">
+    <div class="callout-title">🔑 A chave de API — o que é e por que guardar em Secrets</div>
+    <div class="callout-body">A API key é como uma senha que identifica você para o serviço. <strong>Nunca coloque a chave direto no código</strong> — ela pode vazar se você compartilhar o notebook. O Secrets do Colab a guarda de forma segura e você acessa via código sem expô-la.</div>
+  </div>
+  <div class="slide-number">13 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que cada linha faz — sem pressa</h2>
+  <table class="data-table">
+    <thead><tr><th style="width:160px">Linha</th><th>O que faz</th><th>Por que existe</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">!pip install -q ollama</code></td>
+        <td>Instala a biblioteca <code style="font-family:'JetBrains Mono',monospace;font-size:11px">ollama</code> no ambiente do Colab</td>
+        <td>O Colab começa do zero. Toda biblioteca precisa ser instalada antes de ser usada. O <code style="font-family:'JetBrains Mono',monospace;font-size:11px">-q</code> é "quiet" — não mostrar mensagens de progresso.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">import ollama</code></td>
+        <td>Traz a biblioteca para dentro do código</td>
+        <td>Instalar ≠ usar. Você instala um app no celular (pip install) e depois abre (import).</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">userdata.get(...)</code></td>
+        <td>Lê a chave de API dos Secrets</td>
+        <td>A chave não fica no código — fica no cofre (Secrets). O código busca do cofre só quando precisa.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">ollama.Client(...)</code></td>
+        <td>Cria a conexão com o servidor da Ollama Cloud</td>
+        <td>Como abrir uma linha telefônica antes de ligar. O endereço + chave dizem para onde conectar e quem você é.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">meu_prompt = """..."""</code></td>
+        <td>Armazena o prompt numa variável de texto</td>
+        <td>Separar o prompt do resto do código facilita editar. Triple quotes (<code style="font-family:'JetBrains Mono',monospace;font-size:11px">"""</code>) permitem múltiplas linhas.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">client.chat(...)</code></td>
+        <td>Envia o prompt e retorna a resposta do modelo</td>
+        <td>É a chamada real à API. O modelo recebe, processa e devolve. Tudo que vem antes é preparação para este momento.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:12px">print(...)</code></td>
+        <td>Exibe o texto da resposta no output</td>
+        <td>A resposta chega como um dicionário Python. Navegamos até a chave <code style="font-family:'JetBrains Mono',monospace;font-size:11px">"content"</code> que contém o texto.</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="slide-number">14 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que aconteceu quando rodou?</h2>
+  <p>Vamos entender o fluxo completo de uma chamada à API:</p>
+  <div style="display:flex;align-items:stretch;gap:0;margin:20px 0;border:1px solid var(--fiap-border);border-radius:12px;overflow:hidden;background:var(--fiap-surface)">
+    <div style="flex:1;padding:20px;border-right:1px solid var(--fiap-border);text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">💻</div>
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Seu Colab</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Tokeniza o prompt, monta o JSON, envia via HTTPS para api.ollama.com com sua chave</div>
+    </div>
+    <div style="display:flex;align-items:center;padding:0 12px;color:var(--fiap-pink);font-size:20px;font-weight:700">→</div>
+    <div style="flex:1;padding:20px;border-right:1px solid var(--fiap-border);text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">☁️</div>
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Ollama Cloud</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Autentica sua chave, roteia para o modelo Qwen3.6:27b disponível nos servidores</div>
+    </div>
+    <div style="display:flex;align-items:center;padding:0 12px;color:var(--fiap-pink);font-size:20px;font-weight:700">→</div>
+    <div style="flex:1;padding:20px;border-right:1px solid var(--fiap-border);text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🧠</div>
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-green);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Qwen3.6:27b</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Processa os tokens, prevê a resposta token a token, retorna o JSON com o texto gerado</div>
+    </div>
+    <div style="display:flex;align-items:center;padding:0 12px;color:var(--fiap-pink);font-size:20px;font-weight:700">→</div>
+    <div style="flex:1;padding:20px;text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">📄</div>
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-orange);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Output</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Python recebe o dicionário, você navega até <code style="font-family:'JetBrains Mono',monospace">"content"</code> e imprime o texto</div>
+    </div>
+  </div>
+  <div class="callout callout-green">
+    <div class="callout-title">🎯 O que você acabou de fazer</div>
+    <div class="callout-body">Você enviou um prompt para um LLM de 27 bilhões de parâmetros rodando na nuvem via 8 linhas de Python. É o mesmo padrão usado por chatbots de atendimento, assistentes virtuais e centenas de startups brasileiras em produção — a diferença é escala e robustez, não conceito.</div>
+  </div>
+  <div class="slide-number">15 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-section">
+  <div class="section-number">04</div>
+  <div class="section-title">Lab — Notebook Aluno</div>
+  <div class="section-desc">3 lacunas para completar. O código já está estruturado — você preenche os valores e vê o resultado mudar.</div>
+  <div class="slide-number">16 / 28</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>💻 Notebook Aluno — Complete as 3 lacunas</h2>
+  <p>O código abaixo está quase completo. Complete apenas as partes marcadas com <span style="background:rgba(237,20,91,.15);border:1px dashed rgba(237,20,91,.5);border-radius:4px;padding:0 6px;color:#ED145B;font-family:'JetBrains Mono',monospace;font-size:13px">___</span>.</p>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div>
+      <span class="code-filename">Aula_04_Aluno.ipynb — complete as lacunas</span>
+    </div>
+    <div class="code-body">
+      <pre><span class="cm"># Setup — já feito, não modifique</span>
+<span class="tx">!</span><span class="fn">pip install</span> <span class="st">-q ollama</span>
+<span class="kw">import</span> <span class="nb">ollama</span>
+<span class="kw">from</span> <span class="nb">google.colab</span> <span class="kw">import</span> <span class="nb">userdata</span>
+<span class="va">api_key</span> <span class="op">=</span> <span class="nb">userdata</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">"OLLAMA_API_KEY"</span><span class="op">)</span>
+<span class="va">client</span> <span class="op">=</span> <span class="nb">ollama</span><span class="op">.</span><span class="fn">Client</span><span class="op">(</span>
+    <span class="va">host</span><span class="op">=</span><span class="st">"https://api.ollama.com"</span><span class="op">,</span>
+    <span class="va">headers</span><span class="op">={</span><span class="st">"Authorization"</span><span class="op">:</span> <span class="st">f"Bearer </span><span class="va">{api_key}</span><span class="st">"</span><span class="op">}</span>
+<span class="op">)</span>
+
+<span class="cm"># ── LACUNA 1: escolha o modelo ───────────────────────────</span>
+<span class="cm"># Opções: "qwen3.6:27b", "qwen3:8b", "gemma4:9b"</span>
+<span class="va">modelo</span> <span class="op">=</span> <span class="gap">___  # 👉 COMPLETE AQUI: escreva o nome do modelo entre aspas</span>
+
+<span class="cm"># ── LACUNA 2: escreva um prompt com os 4 componentes ────</span>
+<span class="cm"># Inclua: instrução + contexto + input + formato</span>
+<span class="va">meu_prompt</span> <span class="op">=</span> <span class="st">"""</span>
+<span class="gap">___  # 👉 COMPLETE AQUI: escreva seu prompt com os 4 componentes</span>
+<span class="st">"""</span>
+
+<span class="cm"># ── Chamada à API (não modifique, exceto a Lacuna 3) ─────</span>
+<span class="va">resposta</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="va">modelo</span><span class="op">,</span>
+    <span class="va">messages</span><span class="op">=[{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="va">meu_prompt</span><span class="op">}],</span>
+    <span class="cm"># ── LACUNA 3: max_tokens da resposta (tente 50 a 300) ────</span>
+    <span class="va">options</span><span class="op">={</span><span class="st">"num_predict"</span><span class="op">:</span> <span class="gap">___</span><span class="op">}</span>  <span class="cm"># 👉 COMPLETE AQUI</span>
+<span class="op">)</span>
+
+<span class="nb">print</span><span class="op">(</span><span class="va">resposta</span><span class="op">[</span><span class="st">"message"</span><span class="op">][</span><span class="st">"content"</span><span class="op">])</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">17 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Onde este padrão aparece em produção</h2>
+  <div class="card-grid" style="grid-template-columns:1fr 1fr">
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-pink),var(--fiap-purple))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-pink);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Atendimento ao cliente</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Classificação de feedback em escala</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Instrução ("classifique"), contexto (categorias possíveis), input (mensagem do cliente), formato (JSON com sentimento + prioridade). O mesmo código que você escreveu hoje, repetido milhares de vezes por dia.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-blue),var(--fiap-green))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-blue);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Times de engenharia</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Documentação técnica automática</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Instrução ("documente"), contexto (padrão da equipe), input (código-fonte), formato (docstring). Reduz o trabalho repetitivo de escrever documentação função por função.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-green),var(--fiap-orange))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-green);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Varejo digital</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Descrições de produto em escala</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">Input (nome + especificações técnicas), formato (tom e tamanho definidos), saída (texto atraente para o cliente final). O formato do prompt controla exatamente como o texto final aparece.</div>
+    </div>
+    <div class="card" style="position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--fiap-orange),var(--fiap-red))"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--fiap-orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Qualquer startup</div>
+      <div style="font-size:15px;font-weight:700;color:var(--fiap-white);margin-bottom:8px">Você vai construir isso</div>
+      <div style="font-size:13px;color:var(--fiap-muted)">No CKP02 (Aula 07), você vai documentar uma biblioteca de prompts. No CKP03 (Aula 11), vai construir um chatbot especializado em Python. Tudo que você está aprendendo hoje é o fundamento disso.</div>
+    </div>
+  </div>
+  <div class="slide-number">18 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Erros comuns no primeiro código — e como resolver</h2>
+  <table class="data-table">
+    <thead><tr><th>Erro</th><th>Causa provável</th><th>Solução</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fiap-red)">ModuleNotFoundError: ollama</code></td>
+        <td>O <code style="font-family:'JetBrains Mono',monospace;font-size:11px">pip install</code> não rodou antes do <code style="font-family:'JetBrains Mono',monospace;font-size:11px">import</code></td>
+        <td>Rodar as células na ordem correta (de cima para baixo). No Colab, Shift+Enter em cada célula sequencialmente.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fiap-red)">KeyError: 'OLLAMA_API_KEY'</code></td>
+        <td>A chave não foi adicionada nos Secrets do Colab</td>
+        <td>Ir no ícone 🔑 no painel esquerdo e adicionar o secret com o nome exato <code style="font-family:'JetBrains Mono',monospace;font-size:11px">OLLAMA_API_KEY</code>.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fiap-red)">401 Unauthorized</code></td>
+        <td>Chave de API inválida ou expirada</td>
+        <td>Verificar se a chave foi copiada corretamente sem espaços extras. Pedir ao professor uma chave nova se necessário.</td>
+      </tr>
+      <tr>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fiap-red)">print() mostra dicionário, não texto</code></td>
+        <td><code style="font-family:'JetBrains Mono',monospace;font-size:11px">print(resposta)</code> em vez de <code style="font-family:'JetBrains Mono',monospace;font-size:11px">print(resposta["message"]["content"])</code></td>
+        <td>A resposta é um dicionário Python. Navegar até a chave <code style="font-family:'JetBrains Mono',monospace;font-size:11px">"content"</code> para pegar só o texto.</td>
+      </tr>
+      <tr>
+        <td>Resposta em inglês mesmo com prompt em português</td>
+        <td>Prompt não especificou o idioma</td>
+        <td>Adicionar ao formato: "Responda em português brasileiro."</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="callout callout-purple">
+    <div class="callout-title">💡 Filosofia de debugging</div>
+    <div class="callout-body">Erros não são fracasso — são informação. Leia a mensagem de erro com calma: ela geralmente diz exatamente o que está errado. Se não entender, cole a mensagem no ChatGPT ou Claude free tier e pergunte o que significa.</div>
+  </div>
+  <div class="slide-number">19 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Síntese da Aula 04</h2>
+  <div style="display:flex;flex-direction:column;gap:12px;margin:20px 0">
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Um prompt eficaz tem 4 componentes:</strong> Instrução (o que fazer), Contexto (o que saber), Input (o dado a processar) e Formato (como responder). Cada componente ausente é uma decisão que o modelo toma por você.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Você fez sua primeira chamada a um LLM via código Python.</strong> 8 linhas: instalar → importar → autenticar → conectar → escrever prompt → chamar → printar. Esse é o padrão base de todo sistema com LLM.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Nunca coloque a chave de API no código.</strong> Sempre usar Secrets (Colab), variáveis de ambiente ou arquivos <code style="font-family:'JetBrains Mono',monospace;font-size:12px">.env</code>. Chave exposta = custo ou uso indevido por terceiros.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>Modelos diferentes dão respostas diferentes para o mesmo prompt.</strong> Não porque um é melhor que o outro de forma absoluta — mas porque foram treinados com prioridades diferentes.</div>
+    </div>
+    <div style="display:flex;gap:14px;align-items:flex-start;padding:16px 20px;background:var(--fiap-surface);border:1px solid var(--fiap-border);border-radius:10px">
+      <div style="font-size:22px;flex-shrink:0">✅</div>
+      <div style="font-size:14px"><strong>O código é o mesmo que empresas usam em produção</strong> — diferença é escala e robustez. Atendimento, documentação técnica e geração de conteúdo em escala usam exatamente esse padrão, com milhares de requisições por hora.</div>
+    </div>
+  </div>
+  <div class="slide-number">20 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>O que vem na Aula 05 — Zero-shot, One-shot e Few-shot</h2>
+  <p>Agora que você sabe chamar o modelo via código, vamos explorar como <strong>exemplos no prompt</strong> mudam radicalmente a qualidade da resposta.</p>
+  <div class="two-col">
+    <div>
+      <div class="callout callout-blue">
+        <div class="callout-title">🤔 O problema que vai aparecer</div>
+        <div class="callout-body">Você vai notar que mesmo com os 4 componentes, alguns prompts não conseguem fazer o modelo entender exatamente o que você quer — especialmente para tarefas incomuns ou que seguem um padrão específico seu.</div>
+      </div>
+    </div>
+    <div>
+      <div class="callout callout-green">
+        <div class="callout-title">💡 A solução: exemplos no prompt</div>
+        <div class="callout-body">Em vez de descrever o que você quer, você <em>mostra</em>. Um exemplo dentro do prompt vale mais do que dez linhas de instrução. Isso é Few-shot prompting — e é o que o LLM usa para se calibrar na sua tarefa.</div>
+      </div>
+    </div>
+  </div>
+  <div class="callout" style="margin-top:16px">
+    <div class="callout-title">🔮 Para a Aula 05</div>
+    <div class="callout-body">Traga uma tarefa que você goste de fazer — classificar mensagens, resumir notícias, gerar hashtags, o que for. Vamos usar como base para praticar Few-shot ao vivo com o código que você escreveu hoje.</div>
+  </div>
+  <div class="slide-number">21 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Perguntas frequentes — Primeiro código</h2>
+  <table class="data-table">
+    <thead><tr><th>Pergunta</th><th>Resposta</th></tr></thead>
+    <tbody>
+      <tr><td><strong>"Preciso ter Python instalado no computador?"</strong></td><td>Não. O Google Colab roda Python direto no browser, nos servidores do Google. Você não instala nada localmente — tudo fica na nuvem.</td></tr>
+      <tr><td><strong>"Qual a diferença entre pip install e import?"</strong></td><td><code style="font-family:'JetBrains Mono',monospace;font-size:11px">pip install</code> baixa e instala a biblioteca (uma vez por sessão do Colab). <code style="font-family:'JetBrains Mono',monospace;font-size:11px">import</code> a carrega na memória para usar (em toda sessão nova). Instalar = comprar o livro. Importar = abrir o livro.</td></tr>
+      <tr><td><strong>"Por que o Colab perde tudo quando fecha?"</strong></td><td>O Colab usa servidores temporários. Ao fechar, o ambiente é destruído. Por isso salvamos arquivos no Google Drive e usamos Secrets para chaves. O código e outputs ficam no arquivo .ipynb salvo no Drive.</td></tr>
+      <tr><td><strong>"Posso usar outro modelo além do Qwen3.6?"</strong></td><td>Sim. Qualquer modelo disponível no Ollama Cloud funciona — trocar o nome na Lacuna 1 é tudo que precisa. Tente <code style="font-family:'JetBrains Mono',monospace;font-size:11px">gemma4:9b</code> ou <code style="font-family:'JetBrains Mono',monospace;font-size:11px">qwen3:8b</code>.</td></tr>
+      <tr><td><strong>"O código que escrevi aqui funciona fora do Colab?"</strong></td><td>Sim, com pequenas adaptações. Em vez de <code style="font-family:'JetBrains Mono',monospace;font-size:11px">userdata.get()</code>, você usaria <code style="font-family:'JetBrains Mono',monospace;font-size:11px">os.environ.get()</code>. O restante é idêntico.</td></tr>
+    </tbody>
+  </table>
+  <div class="slide-number">22 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Conceitos Python usados hoje — para referência</h2>
+  <p>Você não precisou saber Python de antemão. Mas agora que usou, é útil nomear o que cada coisa é:</p>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div>
+      <span class="code-filename">conceitos_python_aula04.py — referência</span>
+    </div>
+    <div class="code-body">
+      <pre><span class="cm"># VARIÁVEL — guarda um valor com um nome</span>
+<span class="va">modelo</span> <span class="op">=</span> <span class="st">"qwen3.6:27b"</span>  <span class="cm"># string (texto)</span>
+<span class="va">temperatura</span> <span class="op">=</span> <span class="num">0.7</span>         <span class="cm"># float (número decimal)</span>
+
+<span class="cm"># STRING — texto entre aspas. Triple quotes = múltiplas linhas</span>
+<span class="va">texto_curto</span> <span class="op">=</span> <span class="st">"uma linha"</span>
+<span class="va">texto_longo</span> <span class="op">=</span> <span class="st">"""
+primeira linha
+segunda linha
+"""</span>
+
+<span class="cm"># DICIONÁRIO — pares chave:valor, acessados por colchetes</span>
+<span class="va">mensagem</span> <span class="op">= {</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="st">"Olá"</span><span class="op">}</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">mensagem</span><span class="op">[</span><span class="st">"role"</span><span class="op">])</span>     <span class="cm"># → "user"</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">mensagem</span><span class="op">[</span><span class="st">"content"</span><span class="op">])</span>  <span class="cm"># → "Olá"</span>
+
+<span class="cm"># LISTA — sequência de valores, acessada por índice [0]</span>
+<span class="va">mensagens</span> <span class="op">= [</span><span class="va">mensagem</span><span class="op">]</span>  <span class="cm"># lista com 1 dicionário dentro</span>
+
+<span class="cm"># CHAMADA DE FUNÇÃO/MÉTODO — nome() ou objeto.nome()</span>
+<span class="va">resposta</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span><span class="va">model</span><span class="op">=</span><span class="va">modelo</span><span class="op">,</span> <span class="va">messages</span><span class="op">=</span><span class="va">mensagens</span><span class="op">)</span>
+
+<span class="cm"># F-STRING — string com variável dentro usando {}</span>
+<span class="nb">print</span><span class="op">(</span><span class="st">f"Modelo usado: </span><span class="va">{modelo}</span><span class="st">"</span><span class="op">)</span>  <span class="cm"># → "Modelo usado: qwen3.6:27b"</span>
+
+<span class="cm"># PARÂMETRO NOMEADO (kwarg) — nome=valor dentro de uma chamada</span>
+<span class="va">resposta</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="va">modelo</span><span class="op">,</span> <span class="va">messages</span><span class="op">=</span><span class="va">mensagens</span><span class="op">,</span>
+    <span class="va">options</span><span class="op">={</span><span class="st">"num_predict"</span><span class="op">:</span> <span class="num">150</span><span class="op">}</span>  <span class="cm"># max_tokens da Lacuna 3</span>
+<span class="op">)</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">23 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>🚀 Demo Prática — Mesmo pedido, 3 versões de prompt</h2>
+  <p>O professor vai enviar as 3 versões abaixo ao Claude free tier ao vivo. <strong>Você anota o que muda.</strong></p>
+  <div class="prompt-compare">
+    <div class="prompt-version">
+      <div class="prompt-version-label" style="background:rgba(201,73,44,.08);color:var(--fiap-red)">❌ Versão 1 — Sem estrutura</div>
+      <div class="prompt-version-body">"Fala sobre IA"</div>
+      <div class="prompt-version-result">Resultado esperado: resposta genérica, muito longa ou muito curta, sem foco, inútil para qualquer propósito específico</div>
+    </div>
+    <div class="prompt-version">
+      <div class="prompt-version-label" style="background:rgba(213,140,46,.08);color:var(--fiap-orange)">⚠️ Versão 2 — Estrutura parcial</div>
+      <div class="prompt-version-body">"Explique inteligência artificial de forma simples para um estudante universitário"</div>
+      <div class="prompt-version-result">Resultado esperado: melhor que a versão 1, mas ainda vago — sem formato definido, sem foco de aplicação, sem tamanho</div>
+    </div>
+    <div class="prompt-version">
+      <div class="prompt-version-label" style="background:rgba(41,175,140,.08);color:var(--fiap-green)">✅ Versão 3 — 4 componentes presentes</div>
+      <div class="prompt-version-body">"Você é um professor universitário de tecnologia. Explique o que é inteligência artificial para um estudante de 1º ano que nunca programou. Use 1 analogia do cotidiano e termine com 3 exemplos de aplicações reais no Brasil. Máximo de 150 palavras."</div>
+      <div class="prompt-version-result">Resultado esperado: resposta focada, com analogia, com exemplos brasileiros, no tamanho certo — utilizável imediatamente</div>
+    </div>
+  </div>
+  <div class="callout">
+    <div class="callout-title">🎯 O que fez a diferença entre a V1 e a V3</div>
+    <div class="callout-body">Role definido ("professor universitário"), contexto ("1º ano, nunca programou"), estrutura de saída ("analogia + 3 exemplos"), limitação ("150 palavras"). Cada elemento removeu uma decisão que o modelo teria que tomar por conta própria — e tomaria diferente do que você queria.</div>
+  </div>
+  <div class="slide-number">24 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>🚀 Demo — As 8 linhas explicadas uma a uma</h2>
+  <p>O professor digita ao vivo. <strong>Nenhuma linha roda antes de ser explicada.</strong></p>
+  <div class="code-block">
+    <div class="code-header">
+      <div class="code-dot red"></div><div class="code-dot yellow"></div><div class="code-dot green"></div>
+      <span class="code-filename">Aula_04_Primeiro_Codigo.ipynb — célula 1</span>
+    </div>
+    <div class="code-body">
+      <pre><span class="cm"># ── linha 1: instalar a biblioteca que faz a chamada à API ──</span>
+<span class="tx">!</span><span class="fn">pip install</span> <span class="st">-q ollama</span>
+
+<span class="cm"># ── linha 2: importar a biblioteca instalada ──</span>
+<span class="kw">import</span> <span class="nb">ollama</span>
+<span class="kw">from</span> <span class="nb">google.colab</span> <span class="kw">import</span> <span class="nb">userdata</span>
+
+<span class="cm"># ── linha 3: pegar a chave de API dos Secrets do Colab ──</span>
+<span class="va">api_key</span> <span class="op">=</span> <span class="nb">userdata</span><span class="op">.</span><span class="fn">get</span><span class="op">(</span><span class="st">"OLLAMA_API_KEY"</span><span class="op">)</span>
+
+<span class="cm"># ── linha 4: criar o cliente que vai se conectar à API ──</span>
+<span class="va">client</span> <span class="op">=</span> <span class="nb">ollama</span><span class="op">.</span><span class="fn">Client</span><span class="op">(</span>
+    <span class="va">host</span><span class="op">=</span><span class="st">"https://api.ollama.com"</span><span class="op">,</span>
+    <span class="va">headers</span><span class="op">={</span><span class="st">"Authorization"</span><span class="op">:</span> <span class="st">f"Bearer </span><span class="va">{api_key}</span><span class="st">"</span><span class="op">}</span>
+<span class="op">)</span>
+
+<span class="cm"># ── linha 5: escrever o prompt com os 4 componentes ──</span>
+<span class="va">meu_prompt</span> <span class="op">=</span> <span class="st">"""</span>
+<span class="st">Você é um professor universitário de tecnologia.     # contexto</span>
+<span class="st">Explique o que é inteligência artificial             # instrução</span>
+<span class="st">para um estudante de 1º ano que nunca programou.    # contexto</span>
+<span class="st">Use 1 analogia do cotidiano. Máximo de 80 palavras. # formato</span>
+<span class="st">"""</span>
+
+<span class="cm"># ── linha 6–7: enviar o prompt e receber a resposta ──</span>
+<span class="va">resposta</span> <span class="op">=</span> <span class="va">client</span><span class="op">.</span><span class="fn">chat</span><span class="op">(</span>
+    <span class="va">model</span><span class="op">=</span><span class="st">"qwen3.6:27b"</span><span class="op">,</span>
+    <span class="va">messages</span><span class="op">=[{</span><span class="st">"role"</span><span class="op">:</span> <span class="st">"user"</span><span class="op">,</span> <span class="st">"content"</span><span class="op">:</span> <span class="va">meu_prompt</span><span class="op">}]</span>
+<span class="op">)</span>
+
+<span class="cm"># ── linha 8: exibir a resposta ──</span>
+<span class="nb">print</span><span class="op">(</span><span class="va">resposta</span><span class="op">[</span><span class="st">"message"</span><span class="op">][</span><span class="st">"content"</span><span class="op">])</span></pre>
+    </div>
+  </div>
+  <div class="slide-number">25 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <div class="exercise">
+    <div class="exercise-header">
+      <div class="exercise-icon">🧪</div>
+      <div>
+        <div class="exercise-label">Lab — Aula 04</div>
+        <div class="exercise-title">Complete, rode e itere
+          <span class="difficulty"><span class="star">★</span><span class="star empty">★</span><span class="star empty">★</span></span>
+        </div>
+      </div>
+    </div>
+    <p style="color:var(--fiap-muted);font-size:14px;margin-bottom:16px"><strong>Individual · 20 minutos · Google Colab</strong></p>
+    <ol class="exercise-steps">
+      <li><strong>Complete as 3 lacunas</strong> — modelo, prompt e max_tokens. Para o prompt, use os 4 componentes: instrução + contexto + input + formato.</li>
+      <li><strong>Rode a célula</strong> (Shift+Enter ou o botão ▶). Veja a resposta aparecer abaixo da célula.</li>
+      <li><strong>Mude apenas o prompt</strong> — mantenha o mesmo código, troque o texto do prompt e rode novamente. Compare as duas respostas.</li>
+      <li><strong>Desafio</strong>: troque o modelo (Lacuna 1) de <code style="font-family:'JetBrains Mono',monospace;font-size:12px">qwen3.6:27b</code> para <code style="font-family:'JetBrains Mono',monospace;font-size:12px">gemma4:9b</code>. O mesmo prompt dá respostas diferentes? Depois teste valores baixos e altos em max_tokens (Lacuna 3) — o que muda?</li>
+    </ol>
+    <div style="margin:16px 0;padding:14px 16px;background:rgba(237,20,91,.06);border-radius:8px;border-left:3px solid var(--fiap-pink)">
+      <div style="font-size:12px;font-weight:700;color:var(--fiap-pink);margin-bottom:6px">🎯 Sugestão de prompt para começar (Lacuna 2)</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fiap-muted);line-height:1.7">"Você é um especialista em [área que você gosta]. Explique [conceito] para alguém que nunca estudou [área]. Use 1 exemplo do cotidiano. Responda em no máximo 3 parágrafos."</div>
+    </div>
+    <div class="exercise-hint">
+      💡 <strong>Gabarito da Lacuna 3:</strong> um número como <code style="font-family:'JetBrains Mono',monospace;font-size:12px">150</code> ou <code style="font-family:'JetBrains Mono',monospace;font-size:12px">300</code> — <code style="font-family:'JetBrains Mono',monospace;font-size:12px">num_predict</code> é o parâmetro do Ollama equivalente ao "max_tokens": limite de quantos tokens a resposta pode ter. Valor baixo corta a resposta no meio; valor alto permite respostas mais longas (e mais lentas).
+    </div>
+  </div>
+  <div class="slide-number">26 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-content">
+  <h2>Referências</h2>
+  <div class="ref-list">
+    <div class="ref-item"><span class="ref-tag ref-tag-book">Livro</span><div class="ref-text"><strong>Russell, S.; Norvig, P.</strong> — Inteligência Artificial. 3ª ed. Pearson, 2016. Cap. 2: Agentes inteligentes (percepção e ação — analogia ao ciclo prompt-resposta).</div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-paper">Paper</span><div class="ref-text"><strong>Brown et al.</strong> — "Language Models are Few-Shot Learners." NeurIPS, 2020. Seção 3: prompt design. <a href="https://arxiv.org/abs/2005.14165" style="color:var(--fiap-blue)">arxiv.org/abs/2005.14165</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>DAIR.AI</strong> — Prompt Engineering Guide: Prompt Elements. <a href="https://www.promptingguide.ai/introduction/elements" style="color:var(--fiap-blue)">promptingguide.ai/introduction/elements</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>Anthropic</strong> — Prompt Engineering Overview. <a href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview" style="color:var(--fiap-blue)">docs.anthropic.com</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>OpenAI</strong> — Prompt Engineering Guide. <a href="https://platform.openai.com/docs/guides/prompt-engineering" style="color:var(--fiap-blue)">platform.openai.com/docs/guides/prompt-engineering</a></div></div>
+    <div class="ref-item"><span class="ref-tag ref-tag-doc">Online</span><div class="ref-text"><strong>Ollama</strong> — Python library docs. <a href="https://github.com/ollama/ollama-python" style="color:var(--fiap-blue)">github.com/ollama/ollama-python</a></div></div>
+  </div>
+  <div class="slide-number">27 / 28</div><div class="slide-footer">FIAP · Prompt Engineering and AI · 2026</div>
+</div>
+
+
+<div class="slide slide-closing">
+  <svg width="120" height="30" viewBox="0 0 493 120" fill="none"><text x="0" y="95" font-family="Inter,Arial,sans-serif" font-weight="900" font-size="120" fill="#ED145B">FIAP</text></svg>
+  <div style="font-size:32px;font-weight:800;color:var(--fiap-white);margin:24px 0 8px">Aula 04 concluída 🐍</div>
+  <div style="font-size:16px;color:var(--fiap-muted);margin-bottom:12px;max-width:540px">Você acabou de fazer o que pouquíssimos estudantes de 1º ano fazem: chamar um LLM de 27 bilhões de parâmetros diretamente via código. O próximo passo é aprender a calibrá-lo com exemplos.</div>
+  <div class="next-class">
+    <div class="next-label">Próxima Aula — Aula 05 · Módulo 2</div>
+    <div class="next-title">Zero-shot, One-shot e Few-shot</div>
+    <div class="next-desc">Por que 1 exemplo no prompt pode valer mais do que 10 linhas de instrução. Você vai comparar ao vivo os resultados com 0, 1 e 3 exemplos para a mesma tarefa.</div>
+  </div>
+  <div style="margin-top:28px;padding:14px 24px;background:rgba(41,175,140,.08);border:1px solid rgba(41,175,140,.2);border-radius:10px;max-width:540px;text-align:left">
+    <div style="font-size:12px;font-weight:700;color:var(--fiap-green);margin-bottom:4px">🏁 CKP02 — Biblioteca de Prompts · entrega na Aula 07</div>
+    <div style="font-size:13px;color:var(--fiap-muted)">8 prompts documentados (2 zero-shot · 2 few-shot · 2 CoT · 2 role) · grupo de 3–4 · analítico, código é diferencial.</div>
+  </div>
+  <div style="margin-top:24px;font-size:12px;color:var(--fiap-muted)">Copyright © 2026 Prof. Jorge Luiz Gomes · profjorge.gomes@fiap.com.br · FIAP · Todos os direitos reservados.</div>
+  <div class="slide-number">28 / 28</div>
+</div>
+
+
+
+</div>
+<script>
+/* ===== FIAPCHART-2026 ===== */
+(function(){
+  var PAL=['#ED145B','#3D9CCC','#29AF8C','#7C60C6','#D58C2E','#C9492C','#4e4e68'];
+  var tip=document.createElement('div');tip.className='fq-tip';document.body.appendChild(tip);
+  function showTip(e,html){tip.innerHTML=html;tip.classList.add('on');moveTip(e);}
+  function moveTip(e){
+    var x=e.clientX+14,y=e.clientY+14;
+    if(x+300>window.innerWidth)x=e.clientX-tip.offsetWidth-14;
+    if(y+tip.offsetHeight+10>window.innerHeight)y=e.clientY-tip.offsetHeight-14;
+    tip.style.left=x+'px';tip.style.top=y+'px';
+  }
+  function hideTip(){tip.classList.remove('on');}
+  function bind(el,html){
+    el.addEventListener('mouseenter',function(e){showTip(e,html);});
+    el.addEventListener('mousemove',moveTip);
+    el.addEventListener('mouseleave',hideTip);
+    el.addEventListener('click',function(e){showTip(e,html);});
+  }
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function ns(t){return document.createElementNS('http://www.w3.org/2000/svg',t);}
+  function at(el,o){for(var k in o)el.setAttribute(k,o[k]);return el;}
+  function txt(x,y,s,o){var t=at(ns('text'),o||{});t.setAttribute('x',x);t.setAttribute('y',y);
+    t.setAttribute('font-family','Inter,sans-serif');t.textContent=s;return t;}
+  function split(s){return (s||'').split('|').map(function(v){return v.trim();});}
+  function nums(s){return split(s).map(parseFloat);}
+
+  /* ---------- grafico de barras (horizontal ou vertical) ---------- */
+  function bar(box){
+    var labels=split(box.dataset.labels),vals=nums(box.dataset.values),
+        notes=box.dataset.notes?split(box.dataset.notes):[],
+        unit=box.dataset.unit||'',horiz=box.dataset.orient!=='v',
+        max=Math.max.apply(null,vals)*1.02,
+        svg=ns('svg'),W=760,rowH=horiz?34:0,H=horiz?labels.length*rowH+16:250;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    if(horiz){
+      var lw=Math.min(230,10+Math.max.apply(null,labels.map(function(l){return l.length*6.6;})));
+      labels.forEach(function(lb,i){
+        var y=i*rowH+8,w=Math.max(3,(vals[i]/max)*(W-lw-92)),c=PAL[i%PAL.length];
+        svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+        var r=at(ns('rect'),{x:lw,y:y+5,width:w,height:19,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(lw+w+9,y+19,vals[i]+unit,{'font-size':'11.5','font-weight':'700',fill:c}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }else{
+      var bw=(W-60)/labels.length,base=205;
+      svg.appendChild(at(ns('line'),{x1:44,y1:base,x2:W-6,y2:base,stroke:'#e2e4ec','stroke-width':1.5}));
+      labels.forEach(function(lb,i){
+        var h=Math.max(2,(vals[i]/max)*168),x=52+i*bw,c=PAL[i%PAL.length];
+        var r=at(ns('rect'),{x:x,y:base-h,width:bw*.6,height:h,rx:5,fill:c,class:'fq-bar'});
+        svg.appendChild(r);
+        svg.appendChild(txt(x+bw*.3,base-h-7,vals[i]+unit,{'font-size':'11','font-weight':'700',fill:c,'text-anchor':'middle'}));
+        svg.appendChild(txt(x+bw*.3,base+17,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));
+        bind(r,'<b>'+esc(lb)+'</b>'+esc(vals[i]+unit)+(notes[i]?'<br>'+esc(notes[i]):''));
+      });
+    }
+    return svg;
+  }
+
+  /* ---------- grafico de linhas multi-serie ---------- */
+  function line(box){
+    var xs=split(box.dataset.x),
+        series=JSON.parse(box.dataset.series),
+        unit=box.dataset.unit||'',logY=box.dataset.scale==='log',
+        W=760,H=260,L=52,R=14,T=14,B=38,
+        all=series.reduce(function(a,s){return a.concat(s.values);},[]),
+        mx=Math.max.apply(null,all),mn=logY?Math.max(0.0001,Math.min.apply(null,all)):0,
+        svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    function px(i){return L+i*((W-L-R)/Math.max(1,xs.length-1));}
+    function py(v){
+      var f=logY?(Math.log(Math.max(v,mn))-Math.log(mn))/(Math.log(mx)-Math.log(mn)):v/mx;
+      return H-B-f*(H-B-T);
+    }
+    for(var g=0;g<=4;g++){
+      var y=T+g*((H-B-T)/4);
+      svg.appendChild(at(ns('line'),{x1:L,y1:y,x2:W-R,y2:y,stroke:'#eef0f5','stroke-width':1}));
+    }
+    xs.forEach(function(lb,i){svg.appendChild(txt(px(i),H-B+19,lb,{'font-size':'11',fill:'#4e4e68','text-anchor':'middle'}));});
+    series.forEach(function(s,k){
+      var c=s.color||PAL[k%PAL.length],d='';
+      s.values.forEach(function(v,i){d+=(i?' L ':'M ')+px(i).toFixed(1)+' '+py(v).toFixed(1);});
+      var path=at(ns('path'),{d:d,fill:'none',stroke:c,'stroke-width':2.4,'stroke-linejoin':'round','data-key':s.name});
+      svg.appendChild(path);
+      s.values.forEach(function(v,i){
+        var dot=at(ns('circle'),{cx:px(i),cy:py(v),r:5,fill:c,class:'fq-dot','data-key':s.name});
+        svg.appendChild(dot);
+        bind(dot,'<b>'+esc(s.name)+'</b>'+esc(xs[i])+': '+esc(v+unit)+(s.notes&&s.notes[i]?'<br>'+esc(s.notes[i]):''));
+      });
+    });
+    return svg;
+  }
+
+  /* ---------- barra empilhada 100% ---------- */
+  function stack(box){
+    var segs=JSON.parse(box.dataset.segments),W=760,H=64,
+        tot=segs.reduce(function(a,s){return a+s.value;},0),x=0,svg=ns('svg');
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':box.dataset.title||'gráfico'});
+    segs.forEach(function(s,k){
+      var w=(s.value/tot)*W,c=s.color||PAL[k%PAL.length];
+      var r=at(ns('rect'),{x:x,y:8,width:Math.max(1,w-2),height:30,rx:4,fill:c,class:'fq-seg'});
+      svg.appendChild(r);
+      if(w>54)svg.appendChild(txt(x+w/2,28,Math.round(s.value/tot*100)+'%',
+        {'font-size':'12','font-weight':'800',fill:'#fff','text-anchor':'middle'}));
+      svg.appendChild(txt(x+2,54,s.name,{'font-size':'10.5',fill:'#4e4e68'}));
+      bind(r,'<b>'+esc(s.name)+'</b>'+esc(s.value)+' ('+Math.round(s.value/tot*100)+'%)'+(s.note?'<br>'+esc(s.note):''));
+      x+=w;
+    });
+    return svg;
+  }
+
+  /* ---------- softmax com slider de temperatura ---------- */
+  function soft(box){
+    var labels=split(box.dataset.labels),logits=nums(box.dataset.logits),
+        T=parseFloat(box.dataset.temp||'1'),W=760,rowH=30,H=labels.length*rowH+10,
+        svg=ns('svg'),bars=[],pcts=[],lw=190;
+    at(svg,{viewBox:'0 0 '+W+' '+H,role:'img','aria-label':'distribuição de probabilidade'});
+    labels.forEach(function(lb,i){
+      var y=i*rowH+6,c=i===0?'#ED145B':(i<3?'#7C60C6':'#94a3b8');
+      svg.appendChild(txt(lw-10,y+18,lb,{'font-size':'12','font-weight':'600',fill:'#1a1b2f','text-anchor':'end'}));
+      var r=at(ns('rect'),{x:lw,y:y+5,width:1,height:17,rx:4,fill:c,class:'fq-bar'});
+      svg.appendChild(r);bars.push(r);
+      var p=txt(lw+8,y+18,'',{'font-size':'11.5','font-weight':'700',fill:c});
+      svg.appendChild(p);pcts.push(p);
+    });
+    function draw(t){
+      var e=logits.map(function(l){return Math.exp(l/t);}),
+          s=e.reduce(function(a,b){return a+b;},0),max=Math.max.apply(null,e)/s;
+      e.forEach(function(v,i){
+        var pr=v/s,w=Math.max(2,(pr/max)*(W-lw-72));
+        bars[i].setAttribute('width',w);
+        pcts[i].setAttribute('x',lw+w+9);
+        pcts[i].textContent=(pr*100).toFixed(1)+'%';
+        bars[i].__tip='<b>'+esc(labels[i])+'</b>logit '+logits[i].toFixed(1)+
+          ' · probabilidade '+(pr*100).toFixed(1)+'% com temperatura '+t.toFixed(2);
+      });
+    }
+    bars.forEach(function(r){
+      r.addEventListener('mouseenter',function(e){showTip(e,r.__tip);});
+      r.addEventListener('mousemove',moveTip);
+      r.addEventListener('mouseleave',hideTip);
+      r.addEventListener('click',function(e){showTip(e,r.__tip);});
+    });
+    var ctrl=document.createElement('div');ctrl.className='ctrl';
+    ctrl.innerHTML='<label>Temperatura</label>'+
+      '<input type="range" min="0.05" max="2" step="0.05" value="'+T+'"><output>'+T.toFixed(2)+'</output>';
+    var rg=ctrl.querySelector('input'),ou=ctrl.querySelector('output');
+    rg.addEventListener('input',function(){var v=parseFloat(rg.value);ou.textContent=v.toFixed(2);draw(v);});
+    box.appendChild(ctrl);
+    setTimeout(function(){draw(T);},0);
+    return svg;
+  }
+
+  var KIND={bar:bar,line:line,stack:stack,soft:soft};
+
+  document.querySelectorAll('.chart[data-chart]').forEach(function(box){
+    var fn=KIND[box.dataset.chart];if(!fn)return;
+    var svg;try{svg=fn(box);}catch(e){return;}
+    box.insertBefore(svg,box.querySelector('.chart-legend,.ctrl'));
+    /* legenda clicavel liga/desliga serie */
+    box.querySelectorAll('.chart-key[data-key]').forEach(function(key){
+      key.addEventListener('click',function(){
+        key.classList.toggle('off');
+        var off=key.classList.contains('off');
+        svg.querySelectorAll('[data-key="'+key.dataset.key+'"]').forEach(function(el){
+          el.style.display=off?'none':'';
+        });
+      });
+    });
+    if(!box.querySelector('.chart-hint')){
+      var h=document.createElement('div');h.className='chart-hint';
+      h.textContent='Passe o mouse (ou toque) sobre os elementos do gráfico para ver os detalhes.';
+      box.appendChild(h);
+    }
+  });
+
+  /* ---------- hotspots em diagramas SVG ---------- */
+  document.querySelectorAll('.diagram').forEach(function(dg){
+    var spots=dg.querySelectorAll('[data-info]');if(!spots.length)return;
+    var panel=dg.querySelector('.diagram-info');
+    if(!panel){panel=document.createElement('div');panel.className='diagram-info';
+      panel.innerHTML='<b>Diagrama interativo</b>Clique em qualquer bloco para ver a explicação detalhada.';
+      dg.appendChild(panel);}
+    var base=panel.innerHTML;
+    spots.forEach(function(s){
+      var title=s.getAttribute('data-title')||'Detalhe';
+      function open(){
+        spots.forEach(function(o){o.style.strokeWidth='';});
+        s.style.strokeWidth='4';
+        panel.innerHTML='<b>'+esc(title)+'</b>'+s.getAttribute('data-info');
+      }
+      s.addEventListener('click',open);
+      s.addEventListener('mouseenter',open);
+    });
+    dg.addEventListener('mouseleave',function(){
+      spots.forEach(function(o){o.style.strokeWidth='';});panel.innerHTML=base;
+    });
+  });
+
+  /* ---------- abas ---------- */
+  document.querySelectorAll('[data-tabs]').forEach(function(group){
+    var tabs=group.querySelectorAll('.tab'),panels=group.querySelectorAll('.tab-panel');
+    tabs.forEach(function(t,i){
+      t.addEventListener('click',function(){
+        tabs.forEach(function(o){o.classList.remove('on');});
+        panels.forEach(function(o){o.classList.remove('on');});
+        t.classList.add('on');if(panels[i])panels[i].classList.add('on');
+      });
+    });
+  });
+})();
+</script>
+
+
+
+</body>
+</html>

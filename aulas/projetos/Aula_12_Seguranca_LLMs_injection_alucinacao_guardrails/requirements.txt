@@ -1,0 +1,8 @@
+# Dependências do projeto — Aula 12: Segurança em LLMs
+# Instale com:  pip install -r requirements.txt
+
+langchain-ollama
+langchain-core
+python-dotenv
+pytest
+httpx

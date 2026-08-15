@@ -1,0 +1,6 @@
+# Dependências do projeto — Aula 10: Templates e variáveis
+# Instale com:  pip install -r requirements.txt
+
+langchain-ollama
+langchain-core
+python-dotenv

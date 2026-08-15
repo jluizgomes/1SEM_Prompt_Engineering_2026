@@ -1,0 +1,6 @@
+# Dependências do projeto — Aula 07: Role prompting
+# Instale com:  pip install -r requirements.txt
+
+langchain-ollama
+langchain-core
+python-dotenv
